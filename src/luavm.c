@@ -1,6 +1,8 @@
 #include "luacode.h"
+#include "luavm.h"
 
 #include <stdio.h>
+#include <assert.h>
 
 static struct lua_State *L = NULL;
 
@@ -24,12 +26,13 @@ int luavm_init()
     }
 
     L = luaL_newstate();
+
     luaL_openlibs(L); // link lua lib
 
     int err = luaL_loadbuffer(L, lua_code_str, strlen(lua_code_str), "=[luacode main]");
     assert(err == LUA_OK);
 
-    err = lua_pcall(L, 1, 0, 0);
+    err = lua_pcall(L, 0, 0, 0);
     if (err)
     {
         fprintf(stderr, "%s\n", lua_tostring(L, -1));

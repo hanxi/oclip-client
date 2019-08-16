@@ -13,14 +13,14 @@ set LUA_SRC_DIR=%cd%
 set LUA_INSTALL_PATH=%cur_dir%\lua
 
 cd /d %cur_dir%\lua-build
-: call nmake /nologo clean
-: nmake /nologo
+call nmake /nologo clean
+nmake /nologo
 
 cd /d %cur_dir%\..\..\3rd\luasocket\src
 set LUASOCKET_SRC_DIR=%cd%
 cd /d %cur_dir%\luasocket-build
-: call nmake /nologo clean
-: nmake /nologo
+call nmake /nologo clean
+nmake /nologo
 
 cd /d %cur_dir%\..\..\src
 set ROOT_SRC=%cd%

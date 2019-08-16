@@ -22,8 +22,9 @@ all: oclip.exe
     @if not exist $(OBJ_DIR) mkdir $(OBJ_DIR)
     $(CC) $(CFLAGS) $(INC) /Fo$@ $<
 
-LDFLAGS= /NOLOGO user32.lib shell32.lib lua.lib \
-/LIBPATH:"$(LUA_LIB_PATH)" $(LUA_LIB)
+LDFLAGS= /NOLOGO /LIBPATH:"$(LUA_LIB_PATH)" \
+user32.lib shell32.lib lua.lib
+
 # /SUBSYSTEM:windows /ENTRY:mainCRTStartup \
 
 
