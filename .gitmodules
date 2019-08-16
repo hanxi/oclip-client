@@ -1,0 +1,3 @@
+[submodule "3rd/luasocket"]
+	path = 3rd/luasocket
+	url = git@github.com:diegonehab/luasocket.git
