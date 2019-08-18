@@ -32,7 +32,7 @@ DEF= /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" \
      /D "_WINDLL"  \
      /D "LUASOCKET_$(DEBUG)" \
      /D LUA_BUILD_AS_DLL
-CFLAGS=$(LUA_INC) /O2 /Ot /MT /W3 /nologo $(DEF)
+CFLAGS=$(LUA_INC) /c /O2 /Ot /MT /W3 /nologo $(DEF)
 LDFLAGS= /NOLOGO /DLL /INCREMENTAL:NO \
     /MANIFEST /MANIFESTFILE:"intermediate.manifest" \
     /MANIFESTUAC:"level='asInvoker' uiAccess='false'" \
@@ -44,7 +44,7 @@ all: socket.dll mime.dll install
 #compile
 {$(SRC_DIR)}.c{$(OBJ_DIR)}.obj:
     @if not exist $(OBJ_DIR) mkdir $(OBJ_DIR)
-    $(CC) $(CFLAGS) /Fo$@ /c $<
+    $(CC) $(CFLAGS) /Fo$@ $<
 
 # link
 socket.dll: $(SOCKET_OBJS)
