@@ -1,3 +1,18 @@
 [submodule "3rd/luasocket"]
 	path = 3rd/luasocket
 	url = git@github.com:diegonehab/luasocket.git
+[submodule "3rd/ltray"]
+	path = 3rd/ltray
+	url = git@github.com:hanxi/ltray.git
+[submodule "3rd/lclipboard"]
+	path = 3rd/lclipboard
+	url = git@github.com:hanxi/lclipboard.git
+[submodule "3rd/lua-websockets"]
+	path = 3rd/lua-websockets
+	url = git@github.com:lipp/lua-websockets.git
+[submodule "3rd/copas"]
+	path = 3rd/copas
+	url = git@github.com:keplerproject/copas.git
+[submodule "3rd/luasec"]
+	path = 3rd/luasec
+	url = git@github.com:brunoos/luasec.git

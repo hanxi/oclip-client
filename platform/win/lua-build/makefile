@@ -53,11 +53,11 @@ all: lua.exe luac.exe lua.lib install
 #compile
 {$(SRC_DIR)}.c{$(OBJ_DIR)}.obj:
     @if not exist $(OBJ_DIR) mkdir $(OBJ_DIR)
-    $(CC) $(CFLAGS) /D LUA_BUILD_AS_DLL $(LUA_INC) /Fo$@ $<
+    $(CC) $(CFLAGS) /D LUA_COMPAT_5_2 /D LUA_BUILD_AS_DLL $(LUA_INC) /Fo$@ $<
 
 $(OBJ_DIR)\lua.obj: $(SRC_DIR)\lua.c
     @if not exist $(OBJ_DIR) mkdir $(OBJ_DIR)
-    $(CC) $(CFLAGS) $(LUA_INC) /Fo$@ $?
+    $(CC) $(CFLAGS) /D LUA_COMPAT_5_2 $(LUA_INC) /Fo$@ $?
 
 # link
 lua.exe: $(OBJS) $(OBJ_DIR)\lua.obj
@@ -67,7 +67,7 @@ luac.exe: $(OBJS) $(OBJ_DIR)\luac.obj
     LINK /nologo /OUT:$@ $?
 
 lua.lib: $(OBJS)
-    LIB /nologo /OUT:$@ $?
+    LIB /nologo /DLL /OUT:$@ $?
 
 install:
     @for %I in ( $(INSTALL_BIN) $(INSTALL_INC) $(INSTALL_LIB) ) do if not exist %I mkdir %I
