@@ -1,5 +1,5 @@
 local socket = require'socket'
-local sync = require'websocket.sync'
+local async = require'websocket.async'
 local tools = require'websocket.tools'
 
 local new = function(ws)
@@ -29,11 +29,13 @@ local new = function(ws)
   end
   
   self.sock_close = function(self)
-    self.sock:shutdown()
+    if self.sock.shutdown then
+      self.sock:shutdown()
+    end
     self.sock:close()
   end
   
-  self = sync.extend(self)
+  self = async.extend(self)
   return self
 end
 

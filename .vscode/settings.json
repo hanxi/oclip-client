@@ -1,5 +1,7 @@
 {
     "files.associations": {
         "lauxlib.h": "c"
-    }
+    },
+    "lua.format.indentCount": 2,
+    "lua.format.singleQuote": true
 }
