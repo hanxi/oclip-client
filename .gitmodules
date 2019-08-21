@@ -16,3 +16,6 @@
 [submodule "3rd/luasec"]
 	path = 3rd/luasec
 	url = git@github.com:brunoos/luasec.git
+[submodule "3rd/lua-MessagePack"]
+	path = 3rd/lua-MessagePack
+	url = https://framagit.org/fperrad/lua-MessagePack.git

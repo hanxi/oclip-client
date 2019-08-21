@@ -12,24 +12,24 @@ cd /d %cur_dir%\..\..\3rd\lua-5.3.5\src
 set LUA_SRC_DIR=%cd%
 set LUA_INSTALL_PATH=%cur_dir%\lua
 
-: build lua source
+:: build lua source
 cd /d %cur_dir%\lua-build
 : call nmake /nologo clean
 nmake /nologo
 
-: build luasocket
+:: build luasocket
 cd /d %cur_dir%\..\..\3rd\luasocket\src
 set LUASOCKET_SRC_DIR=%cd%
 cd /d %cur_dir%\luasocket-build
 : call nmake /nologo clean
 nmake /nologo
 
-: build ltray
+:: build ltray
 cd /d %cur_dir%\..\..\3rd\ltray
 : call nmake /nologo clean
 nmake /nologo
 
-: build lclipboard
+:: build lclipboard
 cd /d %cur_dir%\..\..\3rd\lclipboard
 : call nmake /nologo clean
 nmake /nologo
@@ -37,7 +37,7 @@ nmake /nologo
 
 set LUA_LIB_DIR=%LUA_INSTALL_PATH%\bin\lua
 
-: install 3rd/copas
+:: install 3rd/copas
 if not exist %LUA_LIB_DIR%\copas mkdir %LUA_LIB_DIR%\copas
 cd /d %cur_dir%\..\..\3rd\copas
 copy src\copas.lua       %LUA_LIB_DIR%\copas.lua
@@ -46,7 +46,7 @@ copy src\copas\smtp.lua  %LUA_LIB_DIR%\copas\smtp.lua
 copy src\copas\http.lua  %LUA_LIB_DIR%\copas\http.lua
 copy src\copas\limit.lua %LUA_LIB_DIR%\copas\limit.lua
 
-: install 3rd/lua-websockets
+:: install 3rd/lua-websockets
 if not exist %LUA_LIB_DIR%\websocket mkdir %LUA_LIB_DIR%\websocket
 cd /d %cur_dir%\..\..\3rd\lua-websockets
 copy src\websocket.lua              %LUA_LIB_DIR%\websocket.lua
@@ -64,21 +64,24 @@ copy src\websocket\tools.lua        %LUA_LIB_DIR%\websocket\tools.lua
 copy src\websocket\frame.lua        %LUA_LIB_DIR%\websocket\frame.lua
 copy src\websocket\bit.lua          %LUA_LIB_DIR%\websocket\bit.lua
 
-: build openssl
-: download perl from http://strawberryperl.com/
-: download openssl from https://www.openssl.org/source/
+:: build openssl
+:: download perl from http://strawberryperl.com/
+:: download openssl from https://www.openssl.org/source/
 : cd /d %cur_dir%\..\..\3rd\openssl-1.1.0k
 : perl Configure VC-WIN32 no-asm --prefix=c:/openssl_lib -static
 : nmake
 : nmake install
 
-: build luasec
-cd /d %cur_dir%\..\..\3rd\luasec\src
-set LUASEC_SRC_DIR=%cd%
-cd /d %cur_dir%\luasec-build
-set OPENSSL_PATH="C:\openssl_lib"
-call nmake /nologo clean
-nmake /nologo
+:: build luasec
+: cd /d %cur_dir%\..\..\3rd\luasec\src
+: set LUASEC_SRC_DIR=%cd%
+: cd /d %cur_dir%\luasec-build
+: set OPENSSL_PATH="C:\openssl_lib"
+: call nmake /nologo clean
+: nmake /nologo
+
+:: install 3rd/lua-MessagePack
+copy %cur_dir%\..\..\3rd\lua-MessagePack\src5.3\MessagePack.lua %LUA_LIB_DIR%\MessagePack.lua
 
 
 

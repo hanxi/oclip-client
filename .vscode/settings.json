@@ -3,5 +3,5 @@
         "lauxlib.h": "c"
     },
     "lua.format.indentCount": 2,
-    "lua.format.singleQuote": true
+    "lua.format.singleQuote": true,
 }
