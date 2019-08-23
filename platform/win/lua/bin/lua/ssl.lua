@@ -174,19 +174,11 @@ S.__index = {
             local len = fmt
 
             while buffsize < len do
-                --[[
-                local r, m = socket.select({self.ssl}, nil, self.timeout)
-                if #r == 0 then
-                    return nil, 'timeout', table.concat(buff)
-                end
-                ]]
-
                 s = self.bio:read(len - buffsize)
                 if s == nil then
                     return nil, 'closed', table.concat(buff)
                 elseif s=='' then
                     return nil, 'timeout', table.concat(buff)
-            
                 elseif type(s) == "string" and s ~= '' then
                     table.insert(buff, s)
                     buffsize = buffsize + string.len(s)
@@ -198,6 +190,7 @@ S.__index = {
                 s = string.sub(buff, len + 1, -1)
                 buff = string.sub(buff, 1, len)
             end
+
             return buff
         end
 
@@ -206,18 +199,12 @@ S.__index = {
             local s = nil
             local buff = prev or ''
             local _, _, p1, p2 = string.find(buff, '(.-)\r\n(.*)')
-            while not p1 do
-                --[[
-                local r, m, err = socket.select({self.ssl}, nil, self.timeout)
-                if #r == 0 then
-                    return nil, err, buff
-                end
-                ]]
 
-                s,err = self.bio:gets(1024)
+            while not p1 do
+                s = self.bio:gets(1024)
                 if s == nil then
                     return nil, 'closed', buff
-                elseif s=="" then
+                elseif s=='' then
                     return nil, 'timeout', buff
                 elseif type(s) == "string" and s ~= '' then
                     buff = buff .. s

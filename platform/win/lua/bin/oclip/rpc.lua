@@ -47,7 +47,8 @@ function _M.process(self, proto)
 end
 
 function _M.send(self, method, params)
-  if self.wb.status ~= 'OPEN' then
+  if self.wb.state ~= 'OPEN' then
+    print("wtfffffffffff")
     return
   end
 
@@ -74,6 +75,15 @@ end
 
 function _M.paste(self, content)
   print('paste', content)
+  local cipher = require('openssl').cipher
+  local key="encrypt key"
+  for k,v in pairs(cipher.list()) do
+   -- print(k,v)
+  end
+  local ret = cipher.decrypt("aes-256-cbc", content, "85FC17F7069ACD39A5C636CD0A6530651096128DA447959F5E250824857DC559", "A1C8A9086496C7B52225AA530EA5F5F1")
+  print("ret:", ret)
+  --echo "hello" | openssl enc -e -aes-256-cbc -nosalt -k "shit" -iv 87
+  print(cipher.encrypt("aes-256-cbc", "hello", "shit", nil, false))
 end
 
 return _M

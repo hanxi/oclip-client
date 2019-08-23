@@ -9,6 +9,7 @@ local tray_conf
 
 local token =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Njc5NjM4NDYuMzQ3LCJuYW1lIjoiZ2l0aHViXzExODU3NTcifQ.rWe411UYB5VB9u-kDqkfUqqM7r8FH3WMjNPrdI0_tms'
+local enckey="encrypt key"
 
 local handler
 

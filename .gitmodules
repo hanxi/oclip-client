@@ -13,9 +13,9 @@
 [submodule "3rd/copas"]
 	path = 3rd/copas
 	url = git@github.com:keplerproject/copas.git
-[submodule "3rd/luasec"]
-	path = 3rd/luasec
-	url = git@github.com:brunoos/luasec.git
 [submodule "3rd/lua-MessagePack"]
 	path = 3rd/lua-MessagePack
 	url = https://framagit.org/fperrad/lua-MessagePack.git
+[submodule "3rd/lua-openssl"]
+	path = 3rd/lua-openssl
+	url = git@github.com:hanxi/lua-openssl.git

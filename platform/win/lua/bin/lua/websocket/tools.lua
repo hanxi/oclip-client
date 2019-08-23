@@ -63,8 +63,6 @@ local sha1_crypto
 local done,crypto = pcall(require,'crypto')
 if done then
   sha1_crypto = function(msg)
-    local digest = require('openssl').digest
-    print("shenmegui", digest)
     return crypto.digest('sha1',msg,true)
   end
 end
