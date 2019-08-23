@@ -75,15 +75,24 @@ end
 
 function _M.paste(self, content)
   print('paste', content)
+  local openssl = require "openssl"
   local cipher = require('openssl').cipher
   local key="encrypt key"
   for k,v in pairs(cipher.list()) do
    -- print(k,v)
   end
-  local ret = cipher.decrypt("aes-256-cbc", content, "85FC17F7069ACD39A5C636CD0A6530651096128DA447959F5E250824857DC559", "A1C8A9086496C7B52225AA530EA5F5F1")
+
+  local key = '85FC17F7069ACD39A5C636CD0A653065'
+  key = openssl.hex(key,false)
+  print("ffffffffffffffff", key)
+  --iv = openssl.hex(key,false)
+
+  local ret = cipher.decrypt("aes-128-ecb", content, key, iv)
   print("ret:", ret)
   --echo "hello" | openssl enc -e -aes-256-cbc -nosalt -k "shit" -iv 87
-  print(cipher.encrypt("aes-256-cbc", "hello", "shit", nil, false))
+ 
+  local cdata = cipher.encrypt("aes-256-cbc", "hello", key, iv)
+  print(openssl.base64(cdata))
 end
 
 return _M
