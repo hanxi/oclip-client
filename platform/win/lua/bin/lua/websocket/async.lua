@@ -154,6 +154,7 @@ local connect = function(self, ws_url, ws_protocol, ssl_params)
     return nil, err
   end
   if protocol == 'wss' then
+    ssl_params.timeout = 0
     self.sock = ssl.wrap(self.sock, ssl_params)
     self.sock:sni(host)
     local ret, err = self.sock:dohandshake()
@@ -169,7 +170,7 @@ local connect = function(self, ws_url, ws_protocol, ssl_params)
   elseif type(ws_protocol) == 'table' then
     ws_protocols_tbl = ws_protocol
   end
-  local key = tools.generate_key()
+  local key = "dGhlIHNhbXBsZSBub25jZQ==" --tools.generate_key()
   local req =
     handshake.upgrade_request {
     key = key,
@@ -182,9 +183,12 @@ local connect = function(self, ws_url, ws_protocol, ssl_params)
   if n ~= #req then
     return nil, err, nil
   end
+  
   local resp = {}
   repeat
+    print("s1")
     local line, err = self:sock_receive('*l')
+    print("s2", line, err)
     resp[#resp + 1] = line
     if err then
       return nil, err, nil
@@ -195,7 +199,7 @@ local connect = function(self, ws_url, ws_protocol, ssl_params)
   local expected_accept = handshake.sec_websocket_accept(key)
   if headers['sec-websocket-accept'] ~= expected_accept then
     local msg = 'Websocket Handshake failed: Invalid Sec-Websocket-Accept (expected %s got %s)'
-    return nil, msg:format(expected_accept, headers['sec-websocket-accept'] or 'nil'), headers
+return nil, msg:format(expected_accept, headers['sec-websocket-accept'] or 'nil'), headers
   end
   self.state = 'OPEN'
   return true, headers['sec-websocket-protocol'], headers

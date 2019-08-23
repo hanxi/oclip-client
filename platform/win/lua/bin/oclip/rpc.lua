@@ -35,26 +35,29 @@ function _M.process(self, proto)
     print('unknow method', method)
     return
   end
-  print("process", method)
+  print('process', method)
   local ret, res_method, res_params = method_func(self, unpack(params))
   if not ret then
     return ret
   end
   if res_method then
-  self:send(res_method, res_params)
+    self:send(res_method, res_params)
   end
   return true
 end
 
 function _M.send(self, method, params)
+  if self.wb.status ~= 'OPEN' then
+    return
+  end
+
   local proto = {
     method = method,
     params = params or {}
   }
   local data = msgpack.pack(proto)
-  print("send", method)
+  print('send', method)
   self.wb:send(data, ws.BINARY)
-  print(method, "fuck")
 end
 
 ------------------------------------------
@@ -62,16 +65,15 @@ end
 ------------------------------------------
 function _M.auth(self)
   self.authed = true
-  print("auth1")
+  print('auth1')
   -- self:send('copy', {'hello'})
-  print("auth2")
---   return true, 'copy', {'hello'}
+  print('auth2')
+  --   return true, 'copy', {'hello'}
   return true, 'paste'
 end
 
 function _M.paste(self, content)
-  print("paste", content)
+  print('paste', content)
 end
-
 
 return _M

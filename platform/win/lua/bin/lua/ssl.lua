@@ -1,281 +1,313 @@
-------------------------------------------------------------------------------
--- LuaSec 0.8
---
--- Copyright (C) 2006-2019 Bruno Silvestre
---
-------------------------------------------------------------------------------
+local openssl = require'openssl'
+local socket = require'socket'
+local ssl,pkey,x509 = openssl.ssl,openssl.pkey,openssl.x509
+local unpack = unpack or table.unpack
 
-local core    = require("ssl.core")
-local context = require("ssl.context")
-local x509    = require("ssl.x509")
-local config  = require("ssl.config")
+local M = {}
 
-local unpack  = table.unpack or unpack
-
--- We must prevent the contexts to be collected before the connections,
--- otherwise the C registry will be cleared.
-local registry = setmetatable({}, {__mode="k"})
-
---
---
---
-local function optexec(func, param, ctx)
-  if param then
-    if type(param) == "table" then
-      return func(ctx, unpack(param))
-    else
-      return func(ctx, param)
+local function load(path)
+    local f = assert(io.open(path,'r'))
+    if f then
+        local c = f:read('*all')
+        f:close()
+        return c
     end
-  end
-  return true
 end
 
---
--- Convert an array of strings to wire-format
---
-local function array2wireformat(array)
-   local str = ""
-   for k, v in ipairs(array) do
-      if type(v) ~= "string" then return nil end
-      local len = #v
-      if len == 0 then
-        return nil, "invalid ALPN name (empty string)"
-      elseif len > 255 then
-        return nil, "invalid ALPN name (length > 255)"
-      end
-      str = str .. string.char(len) .. v
-   end
-   if str == "" then return nil, "invalid ALPN list (empty)" end
-   return str
-end
 
---
--- Convert wire-string format to array
---
-local function wireformat2array(str)
-   local i = 1
-   local array = {}
-   while i < #str do
-      local len = str:byte(i)
-      array[#array + 1] = str:sub(i + 1, i + len)
-      i = i + len + 1
-   end
-   return array
-end
+function M.newcontext(params)
+    local protocol = params.protocol and string.upper(string.sub(params.protocol,1,3))
+        ..string.sub(params.protocol,4,-1) or 'TLSv1_2'
+    local ctx = ssl.ctx_new(protocol,params.ciphers)
+    local xkey = nil
 
---
---
---
-local function newcontext(cfg)
-   local succ, msg, ctx
-   -- Create the context
-   ctx, msg = context.create(cfg.protocol)
-   if not ctx then return nil, msg end
-   -- Mode
-   succ, msg = context.setmode(ctx, cfg.mode)
-   if not succ then return nil, msg end
-   local certificates = cfg.certificates
-   if not certificates then
-      certificates = {
-         { certificate = cfg.certificate, key = cfg.key, password = cfg.password }
-      }
-   end
-   for _, certificate in ipairs(certificates) do
-      -- Load the key
-      if certificate.key then
-         if certificate.password and
-            type(certificate.password) ~= "function" and
-            type(certificate.password) ~= "string"
-         then
-            return nil, "invalid password type"
-         end
-         succ, msg = context.loadkey(ctx, certificate.key, certificate.password)
-         if not succ then return nil, msg end
-      end
-      -- Load the certificate(s)
-      if certificate.certificate then
-        succ, msg = context.loadcert(ctx, certificate.certificate)
-        if not succ then return nil, msg end
-        if certificate.key and context.checkkey then
-          succ = context.checkkey(ctx)
-          if not succ then return nil, "private key does not match public key" end
+    if params.key then
+       if (type(params.password)=='nil') then
+           xkey = assert(pkey.read(load(params.key),true,'pem'))
+       elseif (type(params.password)=='string')  then
+           xkey = assert(pkey.read(load(params.key),true,'pem',params.password))
+       elseif (type(params.password)=='function') then
+           local p = assert(params.password())
+           xkey = assert(pkey.read(load(params.key),true,'pem',p))
+       end
+
+       assert(xkey)
+
+       local xcert = nil
+       if (params.certificate) then
+           xcert = assert(x509.read(load(params.certificate)))
+       end
+       assert(ctx:use( xkey, xcert))
+    end
+
+    if(params.cafile or params.capath) then
+        ctx:verify_locations(params.cafile,params.capath)
+    end
+
+    if(params.verify) then
+        if type(params.verify) ~= "table" then
+            params.verify = {params.verify}
         end
-      end
-   end
-   -- Load the CA certificates
-   if cfg.cafile or cfg.capath then
-      succ, msg = context.locations(ctx, cfg.cafile, cfg.capath)
-      if not succ then return nil, msg end
-   end
-   -- Set SSL ciphers
-   if cfg.ciphers then
-      succ, msg = context.setcipher(ctx, cfg.ciphers)
-      if not succ then return nil, msg end
-   end
-   -- Set SSL cipher suites
-   if cfg.ciphersuites then
-      succ, msg = context.setciphersuites(ctx, cfg.ciphersuites)
-      if not succ then return nil, msg end
-   end
-    -- Set the verification options
-   succ, msg = optexec(context.setverify, cfg.verify, ctx)
-   if not succ then return nil, msg end
-   -- Set SSL options
-   succ, msg = optexec(context.setoptions, cfg.options, ctx)
-   if not succ then return nil, msg end
-   -- Set the depth for certificate verification
-   if cfg.depth then
-      succ, msg = context.setdepth(ctx, cfg.depth)
-      if not succ then return nil, msg end
-   end
 
-   -- NOTE: Setting DH parameters and elliptic curves needs to come after
-   -- setoptions(), in case the user has specified the single_{dh,ecdh}_use
-   -- options.
+        local luasec_flags = {
+            ["none"] = "none",
+            ["peer"] = "peer",
+            ["client_once"] = "once",
+            ["fail_if_no_peer_cert"] = "fail"
+        }
 
-   -- Set DH parameters
-   if cfg.dhparam then
-      if type(cfg.dhparam) ~= "function" then
-         return nil, "invalid DH parameter type"
-      end
-      context.setdhparam(ctx, cfg.dhparam)
-   end
-   
-   -- Set elliptic curves
-   if (not config.algorithms.ec) and (cfg.curve or cfg.curveslist) then
-     return false, "elliptic curves not supported"
-   end
-   if config.capabilities.curves_list and cfg.curveslist then
-     succ, msg = context.setcurveslist(ctx, cfg.curveslist)
-     if not succ then return nil, msg end
-   elseif cfg.curve then
-     succ, msg = context.setcurve(ctx, cfg.curve)
-     if not succ then return nil, msg end
-   end
-
-   -- Set extra verification options
-   if cfg.verifyext and ctx.setverifyext then
-      succ, msg = optexec(ctx.setverifyext, cfg.verifyext, ctx)
-      if not succ then return nil, msg end
-   end
-
-   -- ALPN
-   if cfg.mode == "server" and cfg.alpn then
-      if type(cfg.alpn) == "function" then
-         local alpncb = cfg.alpn
-         -- This callback function has to return one value only
-         succ, msg = context.setalpncb(ctx, function(str)
-            local protocols = alpncb(wireformat2array(str))
-            if type(protocols) == "string" then
-               protocols = { protocols }
-            elseif type(protocols) ~= "table" then
-               return nil
-            end
-            return (array2wireformat(protocols))    -- use "()" to drop error message
-         end)
-         if not succ then return nil, msg end
-      elseif type(cfg.alpn) == "table" then
-         local protocols = cfg.alpn
-         -- check if array is valid before use it
-         succ, msg = array2wireformat(protocols)
-         if not succ then return nil, msg end
-         -- This callback function has to return one value only
-         succ, msg = context.setalpncb(ctx, function()
-            return (array2wireformat(protocols))    -- use "()" to drop error message
-         end)
-         if not succ then return nil, msg end
-      else
-         return nil, "invalid ALPN parameter"
-      end
-   elseif cfg.mode == "client" and cfg.alpn then
-      local alpn
-      if type(cfg.alpn) == "string" then
-         alpn, msg = array2wireformat({ cfg.alpn })
-      elseif type(cfg.alpn) == "table" then
-         alpn, msg = array2wireformat(cfg.alpn)
-      else
-         return nil, "invalid ALPN parameter"
-      end
-      if not alpn then return nil, msg end
-      succ, msg = context.setalpn(ctx, alpn)
-      if not succ then return nil, msg end
-   end
-
-   if config.capabilities.dane and cfg.dane then
-      context.setdane(ctx)
-   end
-
-   return ctx
+        local verify = 0
+        for i,v in ipairs(params.verify) do
+            verify = verify + (ssl[luasec_flags[v] or v] or v)
+        end
+        ctx:verify_mode(verify)
+    end
+    if params.options then
+        if type(params.options) ~= "table" then
+            params.options = {params.options}
+        end
+        ctx:options(unpack(params.options))
+    end
+    if params.verifyext then
+        for k,v in pairs(params.verifyext) do
+            params.verifyext[k] = string.gsub(v,'lsec_','')
+        end
+        ctx:set_cert_verify(params.verifyext)
+    end
+    if params.dhparam then
+        ctx:set_tmp('dh',params.dhparam)
+    end
+    if params.curve then
+        ctx:set_tmp('ecdh',params.curve)
+    end
+    local t = {}
+    t.ctx = ctx
+    t.mode = params.mode
+    t.params = params
+    return t
 end
+----------------------------------------------------------
+local S = {}
 
---
---
---
-local function wrap(sock, cfg)
+S.__index = {
+    dohandshake = function(self)
+        local ret,msg
+
+        socket.select({self.ssl}, {self.ssl}, self.timeout)
+
+        ret,msg = self.ssl:handshake()
+        while not ret do
+            if (msg=='want_read' or msg=='want_write') then
+                ret,msg = self.ssl:handshake()
+            else
+                return ret,msg
+            end
+        end
+
+        if ret then
+            self._bbf = assert(openssl.bio.filter('buffer'))
+            self._sbf = assert(openssl.bio.filter('ssl',self.ssl,'noclose'))
+
+            self.bio = assert(self._bbf:push(self._sbf))
+        else
+            msg = msg and string.gsub(msg,'_','') or msg
+        end
+        return ret,msg
+    end,
+    getpeercertificate = function(self)
+        self.peer,self.peerchain = self.ssl:peer()
+        return self.peer
+    end,
+    getpeerverification = function(self)
+        local r, t = self.ssl:getpeerverification()
+        if not r then
+            local tt = {}
+            for i,err in pairs(t) do
+                tt[i] = {}
+                tt[i][1] = string.format('error=%d string=%s depth=%s',err.error,err.error_string,err.error_depth)
+            end
+            return r,tt
+        end
+        return r
+    end,
+    getfd = function(self)
+        local fd = self.ssl:getfd()
+        return fd
+    end,
+    getpeerchain = function(self)
+        self.peer,self.peerchain = self.ssl:peer()
+        local chains = {}
+        --[[
+        print(self.peerchain,#self.peerchain)
+        for i=1,#self.peerchain do
+            table.insert(chains,self.peerchain:get(i-1))
+        end
+        --]]
+        if (self.peerchain) then
+            chains = self.peerchain:totable()
+        end
+        return chains
+    end,
+    close = function(self)
+        if self.ssl then
+           self.ssl:shutdown()
+           self.ssl = nil
+        end
+    end,
+    send = function(self,msg,i,j)
+        local m = msg
+        if i then
+            j = j or -1
+            m = string.sub(msg,i,j)
+        end
+        local n = self.bio:write(m)
+        if self.bio:flush() then
+            return n
+        end
+        return nil, "bio flush error", j
+    end,
+    receive = function(self,fmt,prev)
+        if type(fmt) == 'number' then
+            local buff = prev and {prev} or {''}
+            local buffsize = string.len(buff[1])
+            local s = nil
+            local len = fmt
+
+            while buffsize < len do
+                --[[
+                local r, m = socket.select({self.ssl}, nil, self.timeout)
+                if #r == 0 then
+                    return nil, 'timeout', table.concat(buff)
+                end
+                ]]
+
+                s = self.bio:read(len - buffsize)
+                if s == nil then
+                    return nil, 'closed', table.concat(buff)
+                elseif s=='' then
+                    return nil, 'timeout', table.concat(buff)
+            
+                elseif type(s) == "string" and s ~= '' then
+                    table.insert(buff, s)
+                    buffsize = buffsize + string.len(s)
+                end
+            end
+
+            buff = table.concat(buff)
+            if buffsize > len then
+                s = string.sub(buff, len + 1, -1)
+                buff = string.sub(buff, 1, len)
+            end
+            return buff
+        end
+
+        fmt = fmt and string.sub(fmt, 1, 2) or '*l'
+        if (fmt == '*l') then
+            local s = nil
+            local buff = prev or ''
+            local _, _, p1, p2 = string.find(buff, '(.-)\r\n(.*)')
+            while not p1 do
+                --[[
+                local r, m, err = socket.select({self.ssl}, nil, self.timeout)
+                if #r == 0 then
+                    return nil, err, buff
+                end
+                ]]
+
+                s,err = self.bio:gets(1024)
+                if s == nil then
+                    return nil, 'closed', buff
+                elseif s=="" then
+                    return nil, 'timeout', buff
+                elseif type(s) == "string" and s ~= '' then
+                    buff = buff .. s
+                end
+                _, _, p1, p2 = string.find(buff, '(.-)\r\n(.*)')
+            end
+
+            return p1
+        end
+    end,
+    sni = function(self,arg)
+        if type(arg) =='string'  then
+            self.ssl:set('hostname',arg)
+        elseif type(arg)=='table' then
+            local t = {}
+            for k,v in pairs(arg) do
+                t[k] = v.ctx
+            end
+            self.ssl:ctx():set_servername_callback(t)
+        end
+    end,
+
+    settimeout = function(self,n,b)
+        self.timeout = n
+    end,
+    info = function(self,field)
+        --[[
+        algbits
+        authentication
+        bits
+        cipher
+        compression
+        encryption
+        export
+        key
+        mac
+        protocol
+        --]]
+        local cc = self.ssl:current_cipher()
+        if cc then
+            local info = {
+                bits = cc.bits,
+                algbits = cc.algbits,
+                protocol = cc.protocol
+            }
+            if cc.description then
+                info.cipher, info.protocol, info.key,
+                info.authentication, info.encryption, info.mac =
+                    string.match(cc.description,
+                      "^(%S+)%s+(%S+)%s+Kx=(%S+)%s+Au=(%S+)%s+Enc=(%S+)%s+Mac=(%S+)")
+                info.export = (string.match(cc.description, "%sexport%s*$") ~= nil)
+            end
+            self.compression = self.ssl:current_compression()
+            if field then
+                return info[field]
+            end
+            return info
+        end
+    end
+}
+
+
+function M.wrap(sock, cfg)
    local ctx, msg
-   if type(cfg) == "table" then
-      ctx, msg = newcontext(cfg)
+   if type(cfg) == "table" and not cfg.ctx then
+      ctx, msg = M.newcontext(cfg)
       if not ctx then return nil, msg end
    else
       ctx = cfg
    end
-   local s, msg = core.create(ctx)
+
+   local s, msg = ctx.ctx:ssl(sock:getfd())
    if s then
-      core.setfd(s, sock:getfd())
-      sock:setfd(core.SOCKET_INVALID)
-      registry[s] = ctx
-      return s
+      if(ctx.mode=='server') then
+        s:set_accept_state()
+      else
+        s:set_connect_state()
+      end
+      local t = {}
+      t.ssl = s
+      t.socket = sock
+      t.timeout = type(cfg)=='table' and cfg.timeout or nil
+      setmetatable(t,S)
+      return t
    end
-   return nil, msg 
+   return nil, msg
 end
 
---
--- Extract connection information.
---
-local function info(ssl, field)
-  local str, comp, err, protocol
-  comp, err = core.compression(ssl)
-  if err then
-    return comp, err
-  end
-  -- Avoid parser
-  if field == "compression" then
-    return comp
-  end
-  local info = {compression = comp}
-  str, info.bits, info.algbits, protocol = core.info(ssl)
-  if str then
-    info.cipher, info.protocol, info.key,
-    info.authentication, info.encryption, info.mac =
-        string.match(str, 
-          "^(%S+)%s+(%S+)%s+Kx=(%S+)%s+Au=(%S+)%s+Enc=(%S+)%s+Mac=(%S+)")
-    info.export = (string.match(str, "%sexport%s*$") ~= nil)
-  end
-  if protocol then
-    info.protocol = protocol
-  end
-  if field then
-    return info[field]
-  end
-  -- Empty?
-  return ( (next(info)) and info )
+function M.loadcertificate(pem)
+    return openssl.x509.read(pem,'pem')
 end
 
---
--- Set method for SSL connections.
---
-core.setmethod("info", info)
-
---------------------------------------------------------------------------------
--- Export module
---
-
-local _M = {
-  _VERSION        = "0.8",
-  _COPYRIGHT      = core.copyright(),
-  loadcertificate = x509.load,
-  newcontext      = newcontext,
-  wrap            = wrap,
-}
-
-return _M
+return M

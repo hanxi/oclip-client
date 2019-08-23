@@ -60,7 +60,7 @@ copy src\websocket\server.lua       %LUA_LIB_DIR%\websocket\server.lua
 copy src\websocket\server_ev.lua    %LUA_LIB_DIR%\websocket\server_ev.lua
 copy src\websocket\server_copas.lua %LUA_LIB_DIR%\websocket\server_copas.lua
 copy src\websocket\handshake.lua    %LUA_LIB_DIR%\websocket\handshake.lua
-copy src\websocket\tools.lua        %LUA_LIB_DIR%\websocket\tools.lua
+: copy src\websocket\tools.lua        %LUA_LIB_DIR%\websocket\tools.lua
 copy src\websocket\frame.lua        %LUA_LIB_DIR%\websocket\frame.lua
 copy src\websocket\bit.lua          %LUA_LIB_DIR%\websocket\bit.lua
 
@@ -83,7 +83,13 @@ copy src\websocket\bit.lua          %LUA_LIB_DIR%\websocket\bit.lua
 :: install 3rd/lua-MessagePack
 copy %cur_dir%\..\..\3rd\lua-MessagePack\src5.3\MessagePack.lua %LUA_LIB_DIR%\MessagePack.lua
 
-
+:: build lua-openssl
+cd /d %cur_dir%\..\..\3rd\lua-openssl
+set LUA_OPENSSL_DIR=%cd%
+cd /d %cur_dir%\lua-openssl-build
+set OPENSSL_PATH="C:\openssl_lib"
+call nmake /nologo clean
+nmake /nologo
 
 : TODO: use luastatic build one exe.
 
