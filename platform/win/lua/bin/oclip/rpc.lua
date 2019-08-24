@@ -1,5 +1,8 @@
 local ws = require('websocket')
+local clipboard = require 'clipboard'
+local tools = require "oclip.tools"
 local msgpack = require 'MessagePack'
+
 msgpack.set_array 'always_as_map'
 
 local setmetatable = setmetatable
@@ -23,7 +26,8 @@ function _M.close(self, code, reason)
   return self.wb:close(code, reason)
 end
 
-function _M.process(self, proto)
+function _M.process(self, data)
+  local proto = msgpack.unpack(data)
   local method = proto.method
   local params = proto.params
   if not method or not params then
@@ -74,25 +78,10 @@ function _M.auth(self)
 end
 
 function _M.paste(self, content)
-  print('paste', content)
-  local openssl = require "openssl"
-  local cipher = require('openssl').cipher
-  local key="encrypt key"
-  for k,v in pairs(cipher.list()) do
-   -- print(k,v)
-  end
-
-  local key = '85FC17F7069ACD39A5C636CD0A653065'
-  key = openssl.hex(key,false)
-  print("ffffffffffffffff", key)
-  --iv = openssl.hex(key,false)
-
-  local ret = cipher.decrypt("aes-128-ecb", content, key, iv)
-  print("ret:", ret)
-  --echo "hello" | openssl enc -e -aes-256-cbc -nosalt -k "shit" -iv 87
- 
-  local cdata = cipher.encrypt("aes-256-cbc", "hello", key, iv)
-  print(openssl.base64(cdata))
+  print('in paste')
+  local ret = tools.decrypt(content)
+  print("paste:", ret)
+  clipboard.settext(ret)
 end
 
 return _M

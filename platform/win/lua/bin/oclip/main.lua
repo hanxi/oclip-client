@@ -1,10 +1,10 @@
 local copas = require 'copas'
 local ws = require('websocket')
 local ws_client = ws.client.copas({timeout = 5})
-local msgpack = require 'MessagePack'
 local rpc = require 'oclip.rpc'
 local clipboard = require 'clipboard'
 local tray = require 'tray'
+
 local tray_conf
 
 local token =
@@ -50,7 +50,7 @@ local function on_cliboard_change(text, from)
   print('on_cliboard_change', text, from)
   if not from and handler then
     -- TODO: encrypto text
-    handler:send('copy', {text})
+    handler:send('copy', {tools.encrypt(text)})
   end
 end
 clipboard.init(on_cliboard_change)
@@ -100,10 +100,9 @@ copas.addthread(
         if data then
           if opcode == ws.BINARY then
             print('recv binary')
-            local proto = msgpack.unpack(data)
-            xpcall(handler.process, traceback, handler, proto)
+            xpcall(handler.process, traceback, handler, data)
           elseif opcode == ws.TEXT then
-            print('received.', data)
+            --print('received.', data)
           end
         else
           print('connection closed. 5 seconds will retray')

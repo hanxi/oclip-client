@@ -31,7 +31,7 @@ nmake /nologo
 
 :: build lclipboard
 cd /d %cur_dir%\..\..\3rd\lclipboard
-: call nmake /nologo clean
+call nmake /nologo clean
 nmake /nologo
 
 
