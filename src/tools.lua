@@ -1,3 +1,4 @@
+local cfg = require "oclip.config"
 local openssl = require 'openssl'
 local cipher = openssl.cipher
 local digest = openssl.digest
@@ -14,13 +15,13 @@ local function get_key_iv(passwd)
 end
 
 function _M.decrypt(data)
-  local passwd = 'passwd'
+  local passwd = cfg.get('passwd')
   local key, iv = get_key_iv(passwd)
   return cipher.decrypt('aes-128-cbc', data, key, iv)
 end
 
 function _M.encrypt(data)
-  local passwd = 'passwd'
+  local passwd = cfg.get('passwd')
   local key, iv = get_key_iv(passwd)
   return cipher.encrypt('aes-128-cbc', data, key, iv)
 end

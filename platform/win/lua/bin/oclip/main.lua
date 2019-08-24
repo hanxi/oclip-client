@@ -4,9 +4,9 @@ local ws_client = ws.client.copas({timeout = 5})
 local rpc = require 'oclip.rpc'
 local clipboard = require 'clipboard'
 local tray = require 'tray'
+local cfg = require "oclip.config"
 
 local tray_conf
-
 
 local handler
 
@@ -52,11 +52,12 @@ local function on_cliboard_change(text, from)
   if not from and handler then
     -- encrypto text and copy to remote server
     --handler:send_copy(text)
-    
+
     copas.addthread(
-  function()
-    xpcall(handler.send_copy, traceback, handler, text)
-  end)
+      function()
+        xpcall(handler.send_copy, traceback, handler, text)
+      end
+    )
   end
 end
 clipboard.init(on_cliboard_change)
@@ -67,8 +68,10 @@ local function connect()
     protocol = 'TLS',
     cafile = './cacert.pem', --<-- added cafile parameters
     verify = 'peer', --<-- changed "none" to "peer"
-    options = 'all',
+    options = 'all'
   }
+  local domain = cfg.get('domain')
+  local url = string.format("wss://%s/server", domain)
   local ok, err = ws_client:connect('wss://oclip.hanxi.info/server', '', params)
   if not ok then
     print('could not connect', err)

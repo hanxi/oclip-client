@@ -1,6 +1,7 @@
 local ws = require('websocket')
 local clipboard = require 'clipboard'
 local tools = require 'oclip.tools'
+local cfg = require "oclip.config"
 local msgpack = require 'MessagePack'
 
 msgpack.set_array 'always_as_map'
@@ -9,8 +10,6 @@ local setmetatable = setmetatable
 local pack = table.pack or pack
 local unpack = table.unpack or unpack
 
-local token =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Njc5NjM4NDYuMzQ3LCJuYW1lIjoiZ2l0aHViXzExODU3NTcifQ.rWe411UYB5VB9u-kDqkfUqqM7r8FH3WMjNPrdI0_tms'
 
 local _M = {}
 
@@ -24,6 +23,7 @@ function _M.new_handler(self, wb)
     },
     mt
   )
+  local token = cfg.get('token')
   handler:send('auth', {token})
   return handler
 end

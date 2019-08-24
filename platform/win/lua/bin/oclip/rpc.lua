@@ -1,6 +1,7 @@
 local ws = require('websocket')
 local clipboard = require 'clipboard'
-local tools = require "oclip.tools"
+local tools = require 'oclip.tools'
+local cfg = require "oclip.config"
 local msgpack = require 'MessagePack'
 
 msgpack.set_array 'always_as_map'
@@ -9,21 +10,20 @@ local setmetatable = setmetatable
 local pack = table.pack or pack
 local unpack = table.unpack or unpack
 
-local token =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Njc5NjM4NDYuMzQ3LCJuYW1lIjoiZ2l0aHViXzExODU3NTcifQ.rWe411UYB5VB9u-kDqkfUqqM7r8FH3WMjNPrdI0_tms'
-
 
 local _M = {}
 
 local mt = {__index = _M}
 function _M.new_handler(self, wb)
-  local handler = setmetatable(
+  local handler =
+    setmetatable(
     {
       wb = wb,
       authed = false
     },
     mt
   )
+  local token = cfg.get('token')
   handler:send('auth', {token})
   return handler
 end
@@ -58,11 +58,11 @@ end
 
 function _M.send(self, method, params)
   if self.wb.state ~= 'OPEN' then
-    print("send failed. not connect.", method)
+    print('send failed. not connect.', method)
     return
   end
 
-  print("send:", method)
+  print('send:', method)
   local proto = {
     method = method,
     params = params or {}

@@ -4,6 +4,7 @@ local ws_client = ws.client.copas({timeout = 5})
 local rpc = require 'oclip.rpc'
 local clipboard = require 'clipboard'
 local tray = require 'tray'
+local cfg = require "oclip.config"
 
 local tray_conf
 
@@ -69,6 +70,8 @@ local function connect()
     verify = 'peer', --<-- changed "none" to "peer"
     options = 'all'
   }
+  local domain = cfg.get('domain')
+  local url = string.format("wss://%s/server", domain)
   local ok, err = ws_client:connect('wss://oclip.hanxi.info/server', '', params)
   if not ok then
     print('could not connect', err)
