@@ -6,11 +6,8 @@ local _M = {}
 
 local function get_key_iv(passwd)
   hash_256 = digest.digest('sha256', passwd)
-  print(hash_256, #hash_256)
-
   local key = hash_256:sub(1, 32)
   local iv = hash_256:sub(33, 64)
-  print(key, iv)
   key = openssl.hex(key, false)
   iv = openssl.hex(iv, false)
   return key, iv

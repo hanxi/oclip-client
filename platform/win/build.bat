@@ -31,7 +31,7 @@ nmake /nologo
 
 :: build lclipboard
 cd /d %cur_dir%\..\..\3rd\lclipboard
-call nmake /nologo clean
+: call nmake /nologo clean
 nmake /nologo
 
 
@@ -50,6 +50,7 @@ copy src\copas\limit.lua %LUA_LIB_DIR%\copas\limit.lua
 if not exist %LUA_LIB_DIR%\websocket mkdir %LUA_LIB_DIR%\websocket
 cd /d %cur_dir%\..\..\3rd\lua-websockets
 copy src\websocket.lua              %LUA_LIB_DIR%\websocket.lua
+copy src\websocket\async.lua         %LUA_LIB_DIR%\websocket\async.lua
 copy src\websocket\sync.lua         %LUA_LIB_DIR%\websocket\sync.lua
 copy src\websocket\client.lua       %LUA_LIB_DIR%\websocket\client.lua
 copy src\websocket\client_sync.lua  %LUA_LIB_DIR%\websocket\client_sync.lua
@@ -80,7 +81,7 @@ cd /d %cur_dir%\..\..\3rd\lua-openssl
 set LUA_OPENSSL_DIR=%cd%
 cd /d %cur_dir%\lua-openssl-build
 set OPENSSL_PATH="C:\openssl_lib"
-call nmake /nologo clean
+: call nmake /nologo clean
 nmake /nologo
 
 : TODO: use luastatic build one exe.

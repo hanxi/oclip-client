@@ -7,11 +7,12 @@ local tray = require 'tray'
 
 local tray_conf
 
-local token =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1Njc5NjM4NDYuMzQ3LCJuYW1lIjoiZ2l0aHViXzExODU3NTcifQ.rWe411UYB5VB9u-kDqkfUqqM7r8FH3WMjNPrdI0_tms'
-local enckey="encrypt key"
 
 local handler
+
+local function traceback(msg)
+  print(debug.traceback(msg))
+end
 
 local function cb_auto_startup(menuitem)
   menuitem.checked = not menuitem.checked
@@ -49,8 +50,13 @@ tray.init(tray_conf)
 local function on_cliboard_change(text, from)
   print('on_cliboard_change', text, from)
   if not from and handler then
-    -- TODO: encrypto text
-    handler:send('copy', {tools.encrypt(text)})
+    -- encrypto text and copy to remote server
+    --handler:send_copy(text)
+    
+    copas.addthread(
+  function()
+    xpcall(handler.send_copy, traceback, handler, text)
+  end)
   end
 end
 clipboard.init(on_cliboard_change)
@@ -69,9 +75,6 @@ local function connect()
   end
 
   handler = rpc:new_handler(ws_client)
-  print("shit1")
-  handler:send('auth', {token})
-  print("shit2")
 end
 
 copas.addthread(
@@ -85,10 +88,6 @@ copas.addthread(
   end
 )
 
-local function traceback(msg)
-  print(debug.traceback(msg))
-end
-
 copas.addthread(
   function()
     connect()
@@ -99,10 +98,7 @@ copas.addthread(
         local data, opcode = ws_client:receive()
         if data then
           if opcode == ws.BINARY then
-            print('recv binary')
             xpcall(handler.process, traceback, handler, data)
-          elseif opcode == ws.TEXT then
-            --print('received.', data)
           end
         else
           print('connection closed. 5 seconds will retray')
