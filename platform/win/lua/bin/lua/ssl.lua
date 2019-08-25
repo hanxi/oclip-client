@@ -131,6 +131,9 @@ S.__index = {
         return r
     end,
     getfd = function(self)
+        if not self.ssl then
+            return
+        end
         local fd = self.ssl:getfd()
         return fd
     end,
@@ -161,6 +164,9 @@ S.__index = {
             m = string.sub(msg,i,j)
         end
         local n = self.bio:write(m)
+        while n == 0 do
+            n = self.bio:write(m)
+        end
         if self.bio:flush() then
             return n
         end

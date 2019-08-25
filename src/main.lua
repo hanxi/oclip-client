@@ -48,7 +48,7 @@ tray_conf = {
 tray.init(tray_conf)
 
 local function on_cliboard_change(text, from)
-  print('on_cliboard_change', text, from)
+  print('on_cliboard_change', from, #text)
   if not from and handler then
     -- encrypto text and copy to remote server
     --handler:send_copy(text)
