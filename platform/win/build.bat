@@ -27,10 +27,12 @@ nmake /nologo
 :: build ltray
 cd /d %cur_dir%\..\..\3rd\ltray
 : call nmake /nologo clean
+set TRAY_DIR=%cd%
 nmake /nologo
 
 :: build lclipboard
 cd /d %cur_dir%\..\..\3rd\lclipboard
+set CLIPBOARD_DIR=%cd%
 call nmake /nologo clean
 nmake /nologo
 
