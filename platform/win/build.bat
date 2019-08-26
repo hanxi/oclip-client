@@ -31,11 +31,11 @@ nmake /nologo
 
 :: build lclipboard
 cd /d %cur_dir%\..\..\3rd\lclipboard
-: call nmake /nologo clean
+call nmake /nologo clean
 nmake /nologo
 
 
-set LUA_LIB_DIR=%LUA_INSTALL_PATH%\bin\lua
+set LUA_LIB_DIR=%LUA_INSTALL_PATH%\bin
 
 :: install 3rd/copas
 if not exist %LUA_LIB_DIR%\copas mkdir %LUA_LIB_DIR%\copas
@@ -84,15 +84,58 @@ set OPENSSL_PATH="C:\openssl_lib"
 : call nmake /nologo clean
 nmake /nologo
 
-: TODO: use luastatic build one exe.
+: use luastatic build one exe.
+cd /d %cur_dir%\..\..\3rd\luastatic
+copy luastatic.lua       %LUA_LIB_DIR%\luastatic.lua
+cd /d %LUA_INSTALL_PATH%\bin
+set MAIN_DIR=%cd%
 
-: cd /d %cur_dir%\..\..\src
-: set ROOT_SRC=%cd%
-: cd /d %cur_dir%
-: call lua\bin\lua.exe genicon.lua icon.ico icon.h
+: lua.exe luastatic.lua oclip\main.lua ^
+: copas.lua ^
+: crypto.lua ^
+: ltn12.lua ^
+: MessagePack.lua ^
+: mime.lua ^
+: socket.lua ^
+: ssl.lua ^
+: websocket.lua ^
+: copas\ftp.lua ^
+: copas\http.lua ^
+: copas\limit.lua ^
+: copas\smtp.lua ^
+: oclip\config.lua ^
+: oclip\rpc.lua ^
+: oclip\tools.lua ^
+: socket\ftp.lua ^
+: socket\headers.lua ^
+: socket\http.lua ^
+: socket\smtp.lua ^
+: socket\tp.lua ^
+: socket\url.lua ^
+: websocket\async.lua ^
+: websocket\bit.lua ^
+: websocket\client.lua ^
+: websocket\client_copas.lua ^
+: websocket\client_ev.lua ^
+: websocket\client_sync.lua ^
+: websocket\ev_common.lua ^
+: websocket\frame.lua ^
+: websocket\handshake.lua ^
+: websocket\server.lua ^
+: websocket\server_copas.lua ^
+: websocket\server_ev.lua ^
+: websocket\sync.lua ^
+: websocket\tools.lua ^
+: clipboard.dll ^
+: mime\core.dll ^
+: openssl.dll ^
+: socket\core.dll ^
+: ssl.dll ^
+: tray.dll
 
-: call nmake /nologo clean
-: nmake /nologo
+cd /d %cur_dir%
+nmake clean
+nmake
 
 cd /d %local_dir%
 

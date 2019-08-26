@@ -54,7 +54,7 @@ mime.dll: $(MIME_OBJS)
 	LINK $(MIME_OBJS) $(LDFLAGS)$@
 
 
-INSTALL_TOP_LDIR=$(LUA_INSTALL_PATH)\bin\lua
+INSTALL_TOP_LDIR=$(LUA_INSTALL_PATH)\bin
 INSTALL_SOCKET_LDIR=$(INSTALL_TOP_LDIR)\socket
 INSTALL_TOP_CDIR=$(LUA_INSTALL_PATH)\bin
 INSTALL_SOCKET_CDIR=$(INSTALL_TOP_CDIR)\socket
@@ -82,6 +82,8 @@ install:
     @for %I in ($(TO_SOCKET_LDIR)) do copy %I $(INSTALL_SOCKET_LDIR)
     @copy socket.dll $(INSTALL_SOCKET_CDIR)\core.dll
     @copy mime.dll $(INSTALL_MIME_CDIR)\core.dll
+    @copy socket.lib $(LUA_INSTALL_PATH)\lib\socket.lib
+    @copy mime.lib $(LUA_INSTALL_PATH)\lib\mime.lib
 
 clean:
     rd /S /Q $(OBJ_DIR)

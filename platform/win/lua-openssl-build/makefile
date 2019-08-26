@@ -80,7 +80,7 @@ openssl.dll: $(OBJS)
 	LINK $? $(LDFLAGS)$@
 
 
-INSTALL_TOP_LDIR=$(LUA_INSTALL_PATH)\bin\lua
+INSTALL_TOP_LDIR=$(LUA_INSTALL_PATH)\bin
 INSTALL_TOP_CDIR=$(LUA_INSTALL_PATH)\bin
 
 
@@ -89,6 +89,7 @@ install:
     @copy openssl.dll $(INSTALL_TOP_CDIR)\openssl.dll
     @copy $(LUA_OPENSSL_DIR)\lib\ssl.lua $(INSTALL_TOP_LDIR)\ssl.lua
     @copy $(LUA_OPENSSL_DIR)\lib\crypto.lua $(INSTALL_TOP_LDIR)\crypto.lua
+    @copy openssl.lib $(LUA_INSTALL_PATH)\lib
 
 clean:
     rd /S /Q $(OBJ_DIR)
