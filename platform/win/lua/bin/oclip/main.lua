@@ -5,6 +5,7 @@ local rpc = require 'oclip.rpc'
 local clipboard = require 'clipboard'
 local tray = require 'tray'
 local cfg = require "oclip.config"
+local cafile = require "oclip.cafile"
 
 local tray_conf
 
@@ -66,7 +67,7 @@ local function connect()
   local params = {
     mode = 'client',
     protocol = 'TLS',
-    cafile = './cacert.pem', --<-- added cafile parameters
+    cafile = cafile.get(), --<-- added cafile parameters
     verify = 'peer', --<-- changed "none" to "peer"
     options = 'all'
   }
@@ -122,3 +123,5 @@ while true do
     break
   end
 end
+
+cafile.exit()

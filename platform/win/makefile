@@ -1,8 +1,6 @@
-MAIN_DIR=$(MAIN_DIR)
 OBJ_DIR=objs
 
-
-INC=/I $(MAIN_DIR) /I $(LUA_INSTALL_PATH)\include
+INC=/I $(LUA_INSTALL_PATH)\include
 LUA_LIB_PATH=$(LUA_INSTALL_PATH)\lib
 LUA_LIB=lua.lib
 
@@ -28,8 +26,69 @@ LDFLAGS= /NOLOGO \
 
 all: oclip.exe
 
+# where /r lua\bin *.lua
+DEP_LUA= \
+copas.lua \
+crypto.lua \
+ltn12.lua \
+luastatic.lua \
+MessagePack.lua \
+mime.lua \
+socket.lua \
+ssl.lua \
+websocket.lua \
+copas\ftp.lua \
+copas\http.lua \
+copas\limit.lua \
+copas\smtp.lua \
+oclip\cacert.lua \
+oclip\cafile.lua \
+oclip\config.lua \
+oclip\main.lua \
+oclip\rpc.lua \
+oclip\tools.lua \
+socket\ftp.lua \
+socket\headers.lua \
+socket\http.lua \
+socket\smtp.lua \
+socket\tp.lua \
+socket\url.lua \
+websocket\async.lua \
+websocket\bit.lua \
+websocket\client.lua \
+websocket\client_copas.lua \
+websocket\client_ev.lua \
+websocket\client_sync.lua \
+websocket\ev_common.lua \
+websocket\frame.lua \
+websocket\handshake.lua \
+websocket\server.lua \
+websocket\server_copas.lua \
+websocket\server_ev.lua \
+websocket\sync.lua \
+websocket\tools.lua
+
+# where /r lua\bin *.dll
+DEP_DLL= \
+clipboard.dll \
+mime\core.dll \
+openssl.dll \
+socket\core.dll \
+tray.dll
+
+tmp/oclip.lua.c:
+    @if not exist tmp mkdir tmp
+    @copy bin\oclip.lua tmp\oclip.lua
+    @for %I in ( $(DEP_LUA) ) do (echo F | xcopy /Y $(LUA_INSTALL_PATH)\bin\%I tmp\%I)
+    @for %I in ( $(DEP_DLL) ) do (echo F | xcopy /Y $(LUA_INSTALL_PATH)\bin\%I tmp\%I)
+    set OLD_NM=$(NM)
+    set OLD_CC=$(CC)
+    cd tmp & set NM="dumpbin /EXPORTS" & set CC="" & $(LUA_INSTALL_PATH)\bin\lua.exe $(LUA_INSTALL_PATH)\bin\luastatic.lua oclip.lua $(DEP_LUA) $(DEP_DLL) & exit 0
+    set NM=$(OLD_NM)
+    set CC=$(OLD_CC)
+
 #compile
-$(OBJ_DIR)\main.lua.obj: $(MAIN_DIR)\oclip\main.lua.c
+$(OBJ_DIR)\oclip.lua.obj: tmp\oclip.lua.c
     @if not exist $(OBJ_DIR) mkdir $(OBJ_DIR)
     $(CC) $(CFLAGS) $(INC) /Fo$@ $?
 
@@ -64,7 +123,7 @@ LUAOPENSSL_INC = /I $(LUA_OPENSSL_DIR) \
     $(CC) $(CFLAGS) $(LUAOPENSSL_INC) /Fo$@ $<
 
 OBJS = \
-$(OBJ_DIR)\main.lua.obj \
+$(OBJ_DIR)\oclip.lua.obj \
 $(OBJ_DIR)\lclipboard.obj \
 $(OBJ_DIR)\ltray.obj \
 $(OBJ_DIR)\lapi.obj \
@@ -160,3 +219,4 @@ clean:
     del *.exe
     del *.exp
     del *.lib
+    rd /S /Q tmp

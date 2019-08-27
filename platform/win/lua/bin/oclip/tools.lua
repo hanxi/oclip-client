@@ -26,4 +26,14 @@ function _M.encrypt(data)
   return cipher.encrypt('aes-128-cbc', data, key, iv)
 end
 
+function _M.file_exists(name)
+  local f = io.open(name, 'r')
+  if f ~= nil then
+    io.close(f)
+    return true
+  else
+    return false
+  end
+end
+
 return _M

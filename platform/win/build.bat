@@ -89,52 +89,26 @@ nmake /nologo
 : use luastatic build one exe.
 cd /d %cur_dir%\..\..\3rd\luastatic
 copy luastatic.lua       %LUA_LIB_DIR%\luastatic.lua
-cd /d %LUA_INSTALL_PATH%\bin
-set MAIN_DIR=%cd%
 
-: lua.exe luastatic.lua oclip\main.lua ^
-: copas.lua ^
-: crypto.lua ^
-: ltn12.lua ^
-: MessagePack.lua ^
-: mime.lua ^
-: socket.lua ^
-: ssl.lua ^
-: websocket.lua ^
-: copas\ftp.lua ^
-: copas\http.lua ^
-: copas\limit.lua ^
-: copas\smtp.lua ^
-: oclip\config.lua ^
-: oclip\rpc.lua ^
-: oclip\tools.lua ^
-: socket\ftp.lua ^
-: socket\headers.lua ^
-: socket\http.lua ^
-: socket\smtp.lua ^
-: socket\tp.lua ^
-: socket\url.lua ^
-: websocket\async.lua ^
-: websocket\bit.lua ^
-: websocket\client.lua ^
-: websocket\client_copas.lua ^
-: websocket\client_ev.lua ^
-: websocket\client_sync.lua ^
-: websocket\ev_common.lua ^
-: websocket\frame.lua ^
-: websocket\handshake.lua ^
-: websocket\server.lua ^
-: websocket\server_copas.lua ^
-: websocket\server_ev.lua ^
-: websocket\sync.lua ^
-: websocket\tools.lua ^
-: clipboard.dll ^
-: mime\core.dll ^
-: openssl.dll ^
-: socket\core.dll ^
-: ssl.dll ^
-: tray.dll
+: gen src/cacert.lua
+cd /d %cur_dir%\..\..\src
+echo return [[ > cacert.lua
+type cacert.pem >> cacert.lua
+echo ]] >> cacert.lua
 
+: copy oclip src
+set RUN_DIR=%cur_dir%\lua\bin
+cd /d %cur_dir%\..\..\src
+if not exist %RUN_DIR%\oclip mkdir %RUN_DIR%\oclip
+copy main.lua %RUN_DIR%\oclip\main.lua
+copy rpc.lua %RUN_DIR%\oclip\rpc.lua
+copy tools.lua %RUN_DIR%\oclip\tools.lua
+copy config.lua %RUN_DIR%\oclip\config.lua
+copy cafile.lua %RUN_DIR%\oclip\cafile.lua
+copy cacert.lua %RUN_DIR%\oclip\cacert.lua
+copy cacert.pem %RUN_DIR%\cacert.pem
+
+: build oclip.exe
 cd /d %cur_dir%
 nmake clean
 nmake
