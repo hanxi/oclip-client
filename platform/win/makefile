@@ -8,7 +8,7 @@ DEF= /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" \
      /D "_CRT_SECURE_NO_WARNINGS" \
      /D "_WINDLL" \
      /D "LUASOCKET_NODEBUG" \
-     /D LUA_LIB
+     /D LUA_LIB 
 
 OPENSSL_LIB_PATH=$(OPENSSL_PATH)\lib
 CFLAGS=$(LUA_INC) /c /O2 /Ot /MT /W3 /nologo $(DEF)
