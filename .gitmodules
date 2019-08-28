@@ -1,6 +1,6 @@
 [submodule "3rd/luasocket"]
 	path = 3rd/luasocket
-	url = git@github.com:diegonehab/luasocket.git
+	url = https://github.com/diegonehab/luasocket.git
 [submodule "3rd/ltray"]
 	path = 3rd/ltray
 	url = git@github.com:hanxi/ltray.git
