@@ -19,6 +19,3 @@
 [submodule "3rd/lua-openssl"]
 	path = 3rd/lua-openssl
 	url = git@github.com:hanxi/lua-openssl.git
-[submodule "3rd/luastatic"]
-	path = 3rd/luastatic
-	url = https://github.com/ers35/luastatic.git

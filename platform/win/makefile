@@ -14,6 +14,7 @@ DEF= /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" \
 OPENSSL_LIB_PATH=$(OPENSSL_PATH)\lib
 CFLAGS=$(LUA_INC) /c /O2 /Ot /MT /W3 /nologo $(DEF)
 LDFLAGS= /NOLOGO \
+    /SUBSYSTEM:windows /ENTRY:mainCRTStartup \
     /LIBPATH:"$(LUA_LIB_PATH)" $(LUA_LIB) \
     /LIBPATH:"$(OPENSSL_LIB_PATH)" \
     user32.lib shell32.lib ws2_32.lib \
