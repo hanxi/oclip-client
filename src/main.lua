@@ -48,14 +48,8 @@ tray_conf = {
 }
 tray.init(tray_conf)
 
-function string.tohex(str)
-  return (str:gsub('.', function (c)
-      return string.format('%02X', string.byte(c))
-  end))
-end
-
 local function on_cliboard_change(text, from)
-  print('on_cliboard_change', from, text, #text, text:tohex())
+  print('on_cliboard_change', from, #text)
   if not from and handler then
     -- encrypto text and copy to remote server
     --handler:send_copy(text)

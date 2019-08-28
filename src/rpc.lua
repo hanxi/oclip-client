@@ -84,15 +84,9 @@ function _M.auth(self)
   return true
 end
 
-function string.tohex(str)
-  return (str:gsub('.', function (c)
-      return string.format('%02X', string.byte(c))
-  end))
-end
-
 function _M.paste(self, content)
   local text = tools.decrypt(content)
-  print("paste:", text, text:tohex())
+  print("paste:", #text)
   clipboard.settext(text)
 end
 

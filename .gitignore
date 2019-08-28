@@ -3,3 +3,6 @@ objs/
 *.lib
 *.exe
 *.exp
+tmp/
+platform/win/lua/
+platform/win/luasocket-build/intermediate.manifest

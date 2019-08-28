@@ -14,19 +14,19 @@ set LUA_INSTALL_PATH=%cur_dir%\lua
 
 :: build lua source
 cd /d %cur_dir%\lua-build
-: call nmake /nologo clean
+call nmake /nologo clean
 nmake /nologo
 
 :: build luasocket
 cd /d %cur_dir%\..\..\3rd\luasocket\src
 set LUASOCKET_SRC_DIR=%cd%
 cd /d %cur_dir%\luasocket-build
-: call nmake /nologo clean
+call nmake /nologo clean
 nmake /nologo
 
 :: build ltray
 cd /d %cur_dir%\..\..\3rd\ltray
-: call nmake /nologo clean
+call nmake /nologo clean
 set TRAY_DIR=%cd%
 nmake /nologo
 
