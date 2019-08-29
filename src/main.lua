@@ -30,8 +30,14 @@ local function cb_auto_startup(menuitem)
   tray.update(tray_conf)
 end
 
-local function cb_open_config(menuitem)
-  print('TODO: open config file')
+local function cb_open_config()
+  print('open config file')
+  tools.open_config()
+end
+
+local function cb_restart()
+  print('TODO: restart self')
+  --tools.restart()
 end
 
 local function cb_exit()

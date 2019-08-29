@@ -25,7 +25,7 @@ end
 
 local config_file_name = '.oclip'
 local config_file_path
-local function get_config_file_path()
+function _M.get_config_file_path()
   if config_file_path then
     return config_file_path
   end
@@ -35,6 +35,12 @@ local function get_config_file_path()
   print("cfg_path:", config_file_path)
   return config_file_path
 end
+
+local function create_empty_file(cfg_path)
+  local f = io.open(cfg_path, 'w+')
+  f:close()
+end
+
 local config
 local function get_config()
   if config then
@@ -42,9 +48,10 @@ local function get_config()
   end
 
   config = {}
-  local cfg_path = get_config_file_path()
+  local cfg_path = _M.get_config_file_path()
   local f = io.open(cfg_path, 'r')
   if not f then
+    create_empty_file(cfg_path)
     return config
   end
   local line = f:read("l")
