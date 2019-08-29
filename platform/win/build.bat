@@ -100,12 +100,8 @@ echo ]] >> cacert.lua
 set RUN_DIR=%cur_dir%\lua\bin
 cd /d %cur_dir%\..\..\src
 if not exist %RUN_DIR%\oclip mkdir %RUN_DIR%\oclip
-copy main.lua %RUN_DIR%\oclip\main.lua
-copy rpc.lua %RUN_DIR%\oclip\rpc.lua
-copy tools.lua %RUN_DIR%\oclip\tools.lua
-copy config.lua %RUN_DIR%\oclip\config.lua
-copy cafile.lua %RUN_DIR%\oclip\cafile.lua
-copy cacert.lua %RUN_DIR%\oclip\cacert.lua
+%cur_dir%\lua\bin\lua.exe genicon.lua icon.ico icon_bytes.lua
+copy *.lua %RUN_DIR%\oclip\
 copy cacert.pem %RUN_DIR%\cacert.pem
 
 : build oclip.exe

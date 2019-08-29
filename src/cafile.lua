@@ -10,7 +10,7 @@ function _M.get()
       return fname
     end
     fname = os.tmpname()
-    print('tmpfile: ', fname)
+    print('cafile: ', fname)
     local f = io.open(fname, 'w+')
     if f then
         f:write(cacert_content)

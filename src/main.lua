@@ -6,6 +6,7 @@ local clipboard = require 'clipboard'
 local tray = require 'tray'
 local cfg = require "oclip.config"
 local cafile = require "oclip.cafile"
+local icon = require "oclip.icon"
 
 local tray_conf
 
@@ -30,7 +31,7 @@ local function cb_exit()
 end
 
 tray_conf = {
-  icon = '',
+  icon = icon.get(),
   menu = {
     {
       text = 'Auto Startup',
@@ -128,3 +129,4 @@ while true do
 end
 
 cafile.exit()
+icon.exit()

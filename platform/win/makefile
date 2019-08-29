@@ -49,6 +49,8 @@ oclip\config.lua \
 oclip\main.lua \
 oclip\rpc.lua \
 oclip\tools.lua \
+oclip\icon.lua \
+oclip\icon_bytes.lua \
 socket\ftp.lua \
 socket\headers.lua \
 socket\http.lua \
