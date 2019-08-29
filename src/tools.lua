@@ -40,7 +40,7 @@ local userprofile = os.getenv('USERPROFILE')
 print('userprofile:', userprofile)
 local startup_dir =
   string.format('%s\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup', userprofile)
-local link_file_name = string.format("%s\\oclip", startup_dir)
+local link_file_name = string.format("%s\\oclip.lnk", startup_dir)
 
 function _M.is_auto_startup()
   if _M.file_exists(link_file_name) then
@@ -50,6 +50,26 @@ function _M.is_auto_startup()
 end
 
 function _M.set_auto_startup()
+  local vbs_str = string.format([[
+set WshShell=WScript.CreateObject("WScript.Shell")
+set oShellLink=WshShell.CreateShortcut("%s")
+oShellLink.TargetPath="%s"
+oShellLink.WindowStyle=1
+oShellLink.Description="oclip shortcut"
+oShellLink.Save
+]], link_file_name, arg[0])
+  local fname = os.tmpname()..".vbs"
+  local f = io.open(fname, "w+")
+  f:write(vbs_str)
+  f:close()
+  print(vbs_str)
+  local cmd = string.format("call %q", fname)
+  print("cmd:", cmd)
+  os.execute(cmd)
+  os.remove(fname)
+end
+
+function _M.set_auto_startup2()
   local create_dir_cmd = string.format('setlocal EnableExtensions & mkdir %q', startup_dir)
   print('create_dir_cmd:', create_dir_cmd)
   os.execute(create_dir_cmd)

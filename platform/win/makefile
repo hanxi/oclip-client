@@ -14,7 +14,6 @@ DEF= /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" \
 OPENSSL_LIB_PATH=$(OPENSSL_PATH)\lib
 CFLAGS=$(LUA_INC) /c /O2 /Ot /MT /W3 /nologo $(DEF)
 LDFLAGS= /NOLOGO \
-    /SUBSYSTEM:windows /ENTRY:mainCRTStartup \
     /LIBPATH:"$(LUA_LIB_PATH)" $(LUA_LIB) \
     /LIBPATH:"$(OPENSSL_LIB_PATH)" \
     user32.lib shell32.lib ws2_32.lib \
@@ -80,7 +79,7 @@ openssl.dll \
 socket\core.dll \
 tray.dll
 
-tmp/oclip.lua.c:
+tmp\oclip.lua.c:
     @if not exist tmp mkdir tmp
     @copy bin\oclip.lua tmp\oclip.lua
     @for %I in ( $(DEP_LUA) ) do (echo F | xcopy /Y $(LUA_INSTALL_PATH)\bin\%I tmp\%I)
@@ -90,6 +89,13 @@ tmp/oclip.lua.c:
     cd tmp & set NM="dumpbin /EXPORTS" & set CC="" & $(LUA_INSTALL_PATH)\bin\lua.exe $(LUA_INSTALL_PATH)\bin\luastatic.lua oclip.lua $(DEP_LUA) $(DEP_DLL) & exit 0
     set NM=$(OLD_NM)
     set CC=$(OLD_CC)
+
+tmp\icon.rc:
+    echo IDI_ICON1 ICON DISCARDABLE "icon.ico" > tmp\icon.rc
+tmp\icon.ico:
+    copy ..\..\src\icon.ico tmp\icon.ico
+tmp\icon.res: tmp\icon.rc tmp\icon.ico
+    rc.exe /l 0x404 /Fo"tmp\icon.res" tmp\icon.rc
 
 #compile
 $(OBJ_DIR)\oclip.lua.obj: tmp\oclip.lua.c
@@ -215,7 +221,7 @@ $(OBJ_DIR)\srp.obj \
 $(OBJ_DIR)\subsidiar.obj
 
 # link
-oclip.exe: $(OBJS) $(EX_DLLS)
+oclip.exe: $(OBJS) $(EX_DLLS) tmp\icon.res
     LINK $? $(LDFLAGS)$@
 
 clean:
