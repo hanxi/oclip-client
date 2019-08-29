@@ -7,6 +7,7 @@ local tray = require 'tray'
 local cfg = require "oclip.config"
 local cafile = require "oclip.cafile"
 local icon = require "oclip.icon"
+local tools = require "oclip.tools"
 
 local tray_conf
 
@@ -18,7 +19,14 @@ end
 
 local function cb_auto_startup(menuitem)
   menuitem.checked = not menuitem.checked
-  print('TODO: set or unset autostartup file.')
+  print('set or unset autostartup file.')
+
+
+  if menuitem.checked then
+    tools.set_auto_startup()
+  else
+    tools.unset_auto_startup()
+  end
   tray.update(tray_conf)
 end
 
@@ -35,7 +43,8 @@ tray_conf = {
   menu = {
     {
       text = 'Auto Startup',
-      cb = cb_auto_startup
+      cb = cb_auto_startup,
+      checked = tools.is_auto_startup(),
     },
     {
       text = 'Open Config',
