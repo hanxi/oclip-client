@@ -62,12 +62,12 @@ function _M.send(self, method, params)
     return
   end
 
-  print('send:', method)
   local proto = {
     method = method,
     params = params or {}
   }
   local data = msgpack.pack(proto)
+  print('send:', method, #data)
   self.wb:send(data, ws.BINARY)
 end
 
