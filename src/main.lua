@@ -80,22 +80,28 @@ local function clipboard_init()
 end
 
 local function connect()
-  local params = {
-    mode = 'client',
-    protocol = 'TLS',
-    cafile = cafile.get(), --<-- added cafile parameters
-    verify = 'peer', --<-- changed "none" to "peer"
-    options = 'all'
-  }
-  local domain = cfg.get('domain')
-  local url = string.format('wss://%s/server', domain)
-  print("try connect: ", url)
-  local ok, err = ws_client:connect(url, '', params)
-  if not ok then
-    print('could not connect', err)
+  while true do
+    copas.sleep(0)
+    if ws_client.state ~= 'OPEN' then
+      local params = {
+        mode = 'client',
+        protocol = 'TLS',
+        cafile = cafile.get(), --<-- added cafile parameters
+        verify = 'peer', --<-- changed "none" to "peer"
+        options = 'all'
+      }
+      local domain = cfg.get('domain')
+      local url = string.format('wss://%s/server', domain)
+      print('try connect: ', url)
+      local ok, err = ws_client:connect(url, '', params)
+      if not ok then
+        print('could not connect', err)
+        print('will try again 5s later...')
+        copas.sleep(5)
+      end
+      handler = rpc:new_handler(ws_client)
+    end
   end
-
-  handler = rpc:new_handler(ws_client)
 end
 
 local function send_ping()
@@ -103,8 +109,6 @@ local function send_ping()
     copas.sleep(5)
     if ws_client.state == 'OPEN' then
       ws_client:send('ping', ws.TEXT)
-    else
-      --print('closed...')
     end
   end
 end
@@ -117,27 +121,18 @@ local function send_copy()
         handler:send_copy(_send_text)
         _send_text = nil
       end
-    else
-      --print('closed...')
     end
   end
 end
 
 local function handler_receive()
   while true do
+    copas.sleep(0)
     if ws_client.state == 'OPEN' then
       local data, opcode = ws_client:receive()
-      if data then
-        if opcode == ws.BINARY then
-          handler:process(data)
-        end
-      else
-        print('connection closed. 5 seconds will retray')
-        break
+      if data and opcode == ws.BINARY then
+        handler:process(data)
       end
-    else
-      print('not connect.')
-      break
     end
   end
 end
@@ -146,6 +141,11 @@ local function net_init()
   copas.addthread(
     function()
       xpcall(connect, traceback)
+    end
+  )
+
+  copas.addthread(
+    function()
       xpcall(handler_receive, traceback)
     end
   )
@@ -162,7 +162,6 @@ local function net_init()
     end
   )
 end
-
 
 local function main()
   tray_init()
