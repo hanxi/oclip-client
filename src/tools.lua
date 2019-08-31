@@ -85,7 +85,7 @@ oShell.Run "notepad %s", 1]], fpath)
   local cmd = string.format("wscript %s", fname)
   print(cmd)
   os.execute(cmd)
-  --os.remove(fname)
+  os.remove(fname)
 end
 
 function _M.hex_dump(buf)
