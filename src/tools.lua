@@ -64,7 +64,7 @@ oShellLink.Save
   f:write(vbs_str)
   f:close()
   print(vbs_str)
-  local cmd = string.format("call %q", fname)
+  local cmd = string.format("call wscript %q", fname)
   print("cmd:", cmd)
   os.execute(cmd)
   os.remove(fname)
@@ -76,8 +76,16 @@ end
 
 function _M.open_config()
   local fpath = cfg.get_config_file_path()
-  local cmd = string.format("call notepad.exe %s", fpath)
+  local vbs_str = string.format([[Set oShell = CreateObject("WScript.Shell")
+oShell.Run "notepad %s", 1]], fpath)
+  local fname = os.tmpname()..".vbs"
+  local f = io.open(fname, "w+")
+  f:write(vbs_str)
+  f:close()
+  local cmd = string.format("wscript %s", fname)
+  print(cmd)
   os.execute(cmd)
+  --os.remove(fname)
 end
 
 function _M.hex_dump(buf)
@@ -95,8 +103,7 @@ function _M.set_clipboard(text)
   -- _M.hex_dump(text)
   -- not support only '\r'
   if crlf == 'lf' then
-    text = text:gsub('\r\n', '\n')
-    text = text:gsub('\r', '\n')
+    text = text:gsub('\r', '')
   elseif crlf == 'crlf' then
     text = text:gsub('\r', '')
     text = text:gsub('\n', '\r\n')
