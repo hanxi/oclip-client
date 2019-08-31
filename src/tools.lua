@@ -1,4 +1,5 @@
 local cfg = require 'oclip.config'
+local clipboard = require 'clipboard'
 local openssl = require 'openssl'
 local cipher = openssl.cipher
 local digest = openssl.digest
@@ -77,6 +78,31 @@ function _M.open_config()
   local fpath = cfg.get_config_file_path()
   local cmd = string.format("call notepad.exe %s", fpath)
   os.execute(cmd)
+end
+
+function _M.hex_dump(buf)
+  for byte=1, #buf, 16 do
+     local chunk = buf:sub(byte, byte+15)
+     io.write(string.format('%08X  ',byte-1))
+     chunk:gsub('.', function (c) io.write(string.format('%02X ',string.byte(c))) end)
+     io.write(string.rep(' ',3*(16-#chunk)))
+     io.write(' ',chunk:gsub('%c','.'),"\n") 
+  end
+end
+
+function _M.set_clipboard(text)
+  local crlf = cfg.get('crlf')
+  -- _M.hex_dump(text)
+  -- not support only '\r'
+  if crlf == 'lf' then
+    text = text:gsub('\r\n', '\n')
+    text = text:gsub('\r', '\n')
+  elseif crlf == 'crlf' then
+    text = text:gsub('\r', '')
+    text = text:gsub('\n', '\r\n')
+  end
+  -- _M.hex_dump(text)
+  clipboard.settext(text)
 end
 
 return _M

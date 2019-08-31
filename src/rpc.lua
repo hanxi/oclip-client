@@ -1,5 +1,4 @@
 local ws = require('websocket')
-local clipboard = require 'clipboard'
 local tools = require 'oclip.tools'
 local cfg = require "oclip.config"
 local msgpack = require 'MessagePack'
@@ -87,7 +86,7 @@ end
 function _M.paste(self, content)
   local text = tools.decrypt(content)
   print("paste:", #text)
-  clipboard.settext(text)
+  tools.set_clipboard(text)
 end
 
 return _M
