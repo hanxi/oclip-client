@@ -9,7 +9,7 @@
 	url = git@github.com:hanxi/lclipboard.git
 [submodule "3rd/lua-websockets"]
 	path = 3rd/lua-websockets
-	url = git@github.com:lipp/lua-websockets.git
+	url = https://github.com/hanxi/lua-websockets.git
 [submodule "3rd/copas"]
 	path = 3rd/copas
 	url = git@github.com:keplerproject/copas.git
