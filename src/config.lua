@@ -32,7 +32,7 @@ function _M.get_config_file_path()
   local home = get_home_dir()
   local separator = package.config:sub(1, 1)
   config_file_path = home .. separator .. config_file_name
-  print('cfg_path:', config_file_path)
+  --print('cfg_path:', config_file_path)
   return config_file_path
 end
 
@@ -69,7 +69,7 @@ local function get_config()
     local k, v = line:gmatch('(%w+)[^=]*=%s*(.*)')()
     if k and v then
       config[k] = v
-      print(k, '=', v)
+      --print(k, '=', v)
     end
     line = f:read('l')
   end
@@ -77,6 +77,11 @@ local function get_config()
 
   if config.crlf == nil then
     config.crlf = get_default_crlf()
+  end
+
+  config.is_windows = true
+  if package.config:sub(1, 1) == '/' then
+    config.is_windows = false
   end
   return config
 end
