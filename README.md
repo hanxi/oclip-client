@@ -13,15 +13,31 @@ cd platform\win
 build.bat
 ```
 
+- In Linux
+
+```
+cd platform/linux
+sh build.sh
+```
+
 ## Develop
+
+- In Windows
 
 ```
 run.bat
 ```
 
+- In Linux
+
+```
+sh run.sh
+```
+
 ## Requirement
 
-- In windows: VS2017 (C/C++)
+- In Windows: VS2017 (C/C++)
+- In Linux: GCC, libopenssl
 
 ## Run config
 
@@ -34,11 +50,11 @@ domain = oclip.hanxi.info
 
 ## TODO
 
-- Linux platform
-- Windows platorm
- - Set auto start
- - Open config file
- - Change icon
+- ~Linux platform~
+- ~Windows platorm~
+ - ~Set auto start~
+ - ~Open config file~
+ - Change Logo
 
 ## Others
 
