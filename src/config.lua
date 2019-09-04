@@ -83,6 +83,10 @@ local function get_config()
   if package.config:sub(1, 1) == '/' then
     config.is_windows = false
   end
+
+  if config.port == nil then
+    config.port = 9999
+  end
   return config
 end
 

@@ -33,46 +33,42 @@ local function getopt(arg, options)
   return tab
 end
 
-local pid_file = '/tmp/oclip.pid'
+local cfg = require 'oclip.config'
+local socket = require "socket"
+local clipboard = require "oclip.clipboard_helper"
+
+local function send_cmd(cmd)
+    local udp = socket.udp()
+    udp:setpeername('127.0.0.1', cfg.get('port'))
+    udp:send(cmd)
+    local data = udp:receive()
+    udp:close()
+    return data
+end
+
 local function start_master()
     local exe = string.format("%s %s %s", arg[-2] or '', arg[-1] or '', arg[0])
     -- fuck the nohup...
-    cmd = string.format("nohup %s >/dev/null 2>&1 & echo $! > %s | ps > /dev/null", exe, pid_file)
+    cmd = string.format("pkill oclip; nohup %s >/tmp/t1.log 2>&1 &", exe)
     --print(cmd)
     os.execute(cmd)
 end
-local function get_master_pid()
-    local f = io.open(pid_file, 'r')
-    local pid
-    if f then
-        pid = f:read("l")
-        f:close()
-        local cmd = string.format("kill -USR2 %s >/dev/null 2>&1", pid)
-        if os.execute(cmd) then
-            return pid
-        end
-    end
-end
+
 local function check_master()
-    local pid = get_master_pid()
-    if not pid then
+    if not send_cmd('test') then
         start_master()
-        pid = get_master_pid()
-        local retry_cnt = 0
-        while not pip and retry_cnt < 100 do
-            pid = get_master_pid()
-            retry_cnt = retry_cnt + 1
+    end
+    local retry = 10
+    while retry > 0 do
+        if send_cmd('test') then
+            return
         end
+        retry = retry - 1
+        socket.sleep(0.01)
     end
-    if not pid then
-        print("start master failed.")
-        os.exit(1)
-    end
-    return pid
 end
 
-local clipboard = require "oclip.clipboard_helper"
-local master_pid = check_master()
+check_master()
 local opts = getopt(arg, "ioh")
 if opts.i then
     local f = io.stdin
@@ -84,8 +80,11 @@ if opts.i then
         f:close()
     end
     clipboard.settext(text)
-    local cmd = string.format("kill -USR1 %s >/dev/null 2>&1", master_pid)
-    os.execute(cmd)
+
+    if not send_cmd('copy') then
+        print('connect server failed.')
+        os.exit(1)
+    end
 elseif opts.o then
     local text = clipboard.gettext()
     io.write(text)

@@ -1,8 +1,6 @@
-local signal = require "signal"
-
 local _M = {}
 
-local clip_file = '/tmp/oclip'
+local CLIP_FILE = '/tmp/oclip'
 
 local function traceback(msg)
   print(debug.traceback(msg))
@@ -12,17 +10,34 @@ local on_cliboard_change
 function _M.init(_on_cliboard_change)
     on_cliboard_change = _on_cliboard_change
 
-    -- kill -USR1 19443
-    signal.signal("SIGUSR1", function() 
-        local text = _M.gettext()
-        on_cliboard_change(text, false)
-    end)
-    signal.signal("SIGUSR2", function() 
+
+    local copas = require 'copas'
+    local socket = require 'socket'
+    local cfg = require 'oclip.config'
+
+    local udp = socket.udp()
+    udp:setsockname('127.0.0.1', cfg.get('port'))
+    udp:settimeout(0)
+
+    copas.addthread(
+    function ()
+        while true do
+            data, ip, port = udp:receivefrom()
+            if data then
+                print("Received: ", data, ip, port)
+                udp:sendto(data, ip, port)
+            end
+            if data == 'copy' then
+                local text = _M.gettext()
+                on_cliboard_change(text, false)
+            end
+            copas.sleep(0)
+        end
     end)
 end
 
 function _M.settext(text)
-    local f = io.open(clip_file, "w+")
+    local f = io.open(CLIP_FILE, 'w+')
     f:write(text)
     f:close()
 
@@ -32,12 +47,12 @@ function _M.settext(text)
 end
 
 function _M.gettext()
-    local f = io.open(clip_file, 'rb')
+    local f = io.open(CLIP_FILE, 'rb')
     if not f then
         return ''
     end
 
-    local text = f:read("a")
+    local text = f:read('a')
     f:close()
     return text
 end

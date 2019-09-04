@@ -8,6 +8,11 @@ LUA_INSTALL_DIR=$CUR_DIR/lua
 LUA_LIB_DIR=$CUR_DIR/lua/share/lua/5.3
 LUA_CLIB_DIR=$CUR_DIR/lua/lib/lua/5.3
 
+## clean 
+cd $LUA_INSTALL_DIR
+find . -name '*.lua' | xargs rm -f
+find . -name '*.so' | xargs rm -f
+
 ## build lua
 cd $LUA_SRC_DIR
 make linux INSTALL_TOP=$LUA_INSTALL_DIR
@@ -51,11 +56,6 @@ make PREFIX=$CUR_DIR/lua LUA_VERSION=5.3
 make install PREFIX=$CUR_DIR/lua LUA_VERSION=5.3
 cp lib/*.lua $LUA_LIB_DIR/
 
-## install 3rd/lua-signal
-cd $ROOT_DIR/3rd/lua-signal
-make PREFIX=$CUR_DIR/lua LUA_LIBDIR=$LUA_CLIB_DIR
-make install PREFIX=$CUR_DIR/lua LUA_LIBDIR=$LUA_CLIB_DIR
-
 ## use luastatic build one exe.
 cp $ROOT_DIR/3rd/luastatic/luastatic.lua $LUA_LIB_DIR/luastatic.lua
 
@@ -74,12 +74,7 @@ cp *.lua $RUN_DIR/oclip/
 cp cacert.pem $RUN_DIR/cacert.pem
 
 ## build oclip
-cd $CUR_DIR
 mkdir -p $CUR_DIR/tmp
-cd $CUR_DIR/tmp
-find . -name '*.lua' | xargs rm -f
-find . -name '*.so' | xargs rm -f
-
 cd $LUA_INSTALL_DIR/bin
 find . -name '*.lua' | while read line; do
     install -D $line $CUR_DIR/tmp/$line
@@ -98,15 +93,14 @@ cp $LUA_INSTALL_DIR/lib/liblua.a $CUR_DIR/tmp/
 cd $CUR_DIR/tmp
 DEP_SO=$(find ./lib -name '*.so')
 
-CC="" && $LUA_INSTALL_DIR/bin/lua $LUA_INSTALL_DIR/share/lua/5.3/luastatic.lua oclip.lua liblua.a $DEP_LUA $DEP_SO -I$LUA_INSTALL_DIR/include
+CC="" $LUA_INSTALL_DIR/bin/lua $LUA_INSTALL_DIR/share/lua/5.3/luastatic.lua oclip.lua liblua.a $DEP_LUA $DEP_SO -I$LUA_INSTALL_DIR/include
 
 INC=" \
 -I$LUA_INSTALL_DIR/include \
 -I$ROOT_DIR/3rd/luasocket \
 -I$ROOT_DIR/3rd/lua-openssl \
 -I$ROOT_DIR/3rd/lua-openssl/deps/lua-compat \
--I$ROOT_DIR/3rd/lua-openssl/deps/auxiliar \
--I$ROOT_DIR/3rd/lua-signal"
+-I$ROOT_DIR/3rd/lua-openssl/deps/auxiliar"
 
 LUASOCKET_SRC=" \
     $ROOT_DIR/3rd/luasocket/src/mime.c \
@@ -164,11 +158,9 @@ LUA_OPENSSL_SRC=" \
     $ROOT_DIR/3rd/lua-openssl/src/srp.c \
     $ROOT_DIR/3rd/lua-openssl/deps/auxiliar/subsidiar.c"
 
-LUA_SIGNAL_SRC=$ROOT_DIR/3rd/lua-signal/lsignal.c
-
 OPENSSL_LIBS=$(pkg-config openssl --static --libs)
 DEF=" -DPTHREADS"
-cc -Os oclip.lua.c liblua.a $DEF $LUASOCKET_SRC $LUA_OPENSSL_SRC $LUA_SIGNAL_SRC $OPENSSL_LIBS -lm -o ../oclip $INC
+cc -Os oclip.lua.c liblua.a $DEF $LUASOCKET_SRC $LUA_OPENSSL_SRC $OPENSSL_LIBS -lm -o ../oclip $INC
 
 cd $CUR_DIR
 strip oclip
