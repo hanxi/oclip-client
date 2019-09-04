@@ -1,9 +1,12 @@
+set -x -o
+
 CUR_DIR=$(cd "$(dirname "$0")";pwd)
 ROOT_DIR=$(cd "$(dirname "$0")"/../..; pwd)
 
 LUA_SRC_DIR=$ROOT_DIR/3rd/lua-5.3.5
 LUA_INSTALL_DIR=$CUR_DIR/lua
 LUA_LIB_DIR=$CUR_DIR/lua/share/lua/5.3
+LUA_CLIB_DIR=$CUR_DIR/lua/lib/lua/5.3
 
 ## build lua
 cd $LUA_SRC_DIR
@@ -50,8 +53,8 @@ cp lib/*.lua $LUA_LIB_DIR/
 
 ## install 3rd/lua-signal
 cd $ROOT_DIR/3rd/lua-signal
-make PREFIX=$CUR_DIR/lua LUA_LIBDIR=$CUR_DIR/lua/lib/lua/5.3
-make install PREFIX=$CUR_DIR/lua LUA_LIBDIR=$CUR_DIR/lua/lib/lua/5.3
+make PREFIX=$CUR_DIR/lua LUA_LIBDIR=$LUA_CLIB_DIR
+make install PREFIX=$CUR_DIR/lua LUA_LIBDIR=$LUA_CLIB_DIR
 
 ## use luastatic build one exe.
 cp $ROOT_DIR/3rd/luastatic/luastatic.lua $LUA_LIB_DIR/luastatic.lua
@@ -72,6 +75,101 @@ cp cacert.pem $RUN_DIR/cacert.pem
 
 ## build oclip
 cd $CUR_DIR
+mkdir -p $CUR_DIR/tmp
+cd $CUR_DIR/tmp
+find . -name '*.lua' | xargs rm -f
+find . -name '*.so' | xargs rm -f
+
+cd $LUA_INSTALL_DIR/bin
+find . -name '*.lua' | while read line; do
+    install -D $line $CUR_DIR/tmp/$line
+done
+cd $LUA_INSTALL_DIR/share/lua/5.3/
+find . -name '*.lua' | while read line; do
+    install -D $line $CUR_DIR/tmp/$line
+done
+cd $CUR_DIR/tmp
+DEP_LUA=$(find . -name '*.lua')
+
+cp $CUR_DIR/bin/oclip.lua $CUR_DIR/tmp/oclip.lua
+mkdir -p $CUR_DIR/tmp/lib
+cp -rf $LUA_CLIB_DIR/* $CUR_DIR/tmp/lib/
+cp $LUA_INSTALL_DIR/lib/liblua.a $CUR_DIR/tmp/
+cd $CUR_DIR/tmp
+DEP_SO=$(find ./lib -name '*.so')
+
+CC="" && $LUA_INSTALL_DIR/bin/lua $LUA_INSTALL_DIR/share/lua/5.3/luastatic.lua oclip.lua liblua.a $DEP_LUA $DEP_SO -I$LUA_INSTALL_DIR/include
+
+INC=" \
+-I$LUA_INSTALL_DIR/include \
+-I$ROOT_DIR/3rd/luasocket \
+-I$ROOT_DIR/3rd/lua-openssl \
+-I$ROOT_DIR/3rd/lua-openssl/deps/lua-compat \
+-I$ROOT_DIR/3rd/lua-openssl/deps/auxiliar \
+-I$ROOT_DIR/3rd/lua-signal"
+
+LUASOCKET_SRC=" \
+    $ROOT_DIR/3rd/luasocket/src/mime.c \
+    $ROOT_DIR/3rd/luasocket/src/compat.c \
+    $ROOT_DIR/3rd/luasocket/src/luasocket.c \
+    $ROOT_DIR/3rd/luasocket/src/timeout.c \
+    $ROOT_DIR/3rd/luasocket/src/buffer.c \
+    $ROOT_DIR/3rd/luasocket/src/io.c \
+    $ROOT_DIR/3rd/luasocket/src/auxiliar.c \
+    $ROOT_DIR/3rd/luasocket/src/options.c \
+    $ROOT_DIR/3rd/luasocket/src/inet.c \
+    $ROOT_DIR/3rd/luasocket/src/except.c \
+    $ROOT_DIR/3rd/luasocket/src/select.c \
+    $ROOT_DIR/3rd/luasocket/src/tcp.c \
+    $ROOT_DIR/3rd/luasocket/src/udp.c \
+    $ROOT_DIR/3rd/luasocket/src/usocket.c \
+    $ROOT_DIR/3rd/luasocket/src/unixstream.c \
+    $ROOT_DIR/3rd/luasocket/src/unixdgram.c \
+    $ROOT_DIR/3rd/luasocket/src/unix.c"
+
+LUA_OPENSSL_SRC=" \
+    $ROOT_DIR/3rd/lua-openssl/src/asn1.c \
+    $ROOT_DIR/3rd/lua-openssl/src/bio.c \
+    $ROOT_DIR/3rd/lua-openssl/src/cipher.c \
+    $ROOT_DIR/3rd/lua-openssl/src/cms.c \
+    $ROOT_DIR/3rd/lua-openssl/src/compat.c \
+    $ROOT_DIR/3rd/lua-openssl/src/crl.c \
+    $ROOT_DIR/3rd/lua-openssl/src/csr.c \
+    $ROOT_DIR/3rd/lua-openssl/src/dh.c \
+    $ROOT_DIR/3rd/lua-openssl/src/digest.c \
+    $ROOT_DIR/3rd/lua-openssl/src/dsa.c \
+    $ROOT_DIR/3rd/lua-openssl/src/ec.c \
+    $ROOT_DIR/3rd/lua-openssl/src/engine.c \
+    $ROOT_DIR/3rd/lua-openssl/src/hmac.c \
+    $ROOT_DIR/3rd/lua-openssl/src/lbn.c \
+    $ROOT_DIR/3rd/lua-openssl/src/lhash.c \
+    $ROOT_DIR/3rd/lua-openssl/src/misc.c \
+    $ROOT_DIR/3rd/lua-openssl/src/ocsp.c \
+    $ROOT_DIR/3rd/lua-openssl/src/openssl.c \
+    $ROOT_DIR/3rd/lua-openssl/src/ots.c \
+    $ROOT_DIR/3rd/lua-openssl/src/pkcs12.c \
+    $ROOT_DIR/3rd/lua-openssl/src/pkcs7.c \
+    $ROOT_DIR/3rd/lua-openssl/src/pkey.c \
+    $ROOT_DIR/3rd/lua-openssl/src/rsa.c \
+    $ROOT_DIR/3rd/lua-openssl/src/ssl.c \
+    $ROOT_DIR/3rd/lua-openssl/src/th-lock.c \
+    $ROOT_DIR/3rd/lua-openssl/src/util.c \
+    $ROOT_DIR/3rd/lua-openssl/src/x509.c \
+    $ROOT_DIR/3rd/lua-openssl/src/xattrs.c \
+    $ROOT_DIR/3rd/lua-openssl/src/xexts.c \
+    $ROOT_DIR/3rd/lua-openssl/src/xname.c \
+    $ROOT_DIR/3rd/lua-openssl/src/xstore.c \
+    $ROOT_DIR/3rd/lua-openssl/src/xalgor.c \
+    $ROOT_DIR/3rd/lua-openssl/src/callback.c \
+    $ROOT_DIR/3rd/lua-openssl/src/srp.c \
+    $ROOT_DIR/3rd/lua-openssl/deps/auxiliar/subsidiar.c"
+
+LUA_SIGNAL_SRC=$ROOT_DIR/3rd/lua-signal/lsignal.c
+
+OPENSSL_LIBS=$(pkg-config openssl --static --libs)
+DEF=" -DPTHREADS"
+cc -Os oclip.lua.c liblua.a $DEF $LUASOCKET_SRC $LUA_OPENSSL_SRC $LUA_SIGNAL_SRC $OPENSSL_LIBS -lm -o ../oclip $INC
+
 #make clean
 #make
 
