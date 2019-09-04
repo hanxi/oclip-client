@@ -158,7 +158,9 @@ LUA_OPENSSL_SRC=" \
     $ROOT_DIR/3rd/lua-openssl/src/srp.c \
     $ROOT_DIR/3rd/lua-openssl/deps/auxiliar/subsidiar.c"
 
-OPENSSL_LIBS=$(pkg-config openssl --static --libs)
+#OPENSSL_LIBS="$(pkg-config openssl --static --libs)"
+# use static
+OPENSSL_LIBS="-l:libssl.a -lgssapi_krb5 -lkrb5 -lcom_err -lk5crypto -l:libcrypto.a -ldl -lz"
 DEF=" -DPTHREADS"
 cc -Os oclip.lua.c liblua.a $DEF $LUASOCKET_SRC $LUA_OPENSSL_SRC $OPENSSL_LIBS -lm -o ../oclip $INC
 
