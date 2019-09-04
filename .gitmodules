@@ -22,6 +22,3 @@
 [submodule "3rd/luastatic"]
 	path = 3rd/luastatic
 	url = https://github.com/hanxi/luastatic.git
-[submodule "3rd/lua-signal"]
-	path = 3rd/lua-signal
-	url = https://github.com/hanxi/lua-signal.git
