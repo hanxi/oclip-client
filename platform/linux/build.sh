@@ -170,7 +170,6 @@ OPENSSL_LIBS=$(pkg-config openssl --static --libs)
 DEF=" -DPTHREADS"
 cc -Os oclip.lua.c liblua.a $DEF $LUASOCKET_SRC $LUA_OPENSSL_SRC $LUA_SIGNAL_SRC $OPENSSL_LIBS -lm -o ../oclip $INC
 
-#make clean
-#make
-
+cd $CUR_DIR
+strip oclip
 
