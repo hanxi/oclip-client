@@ -50,11 +50,10 @@ domain = oclip.hanxi.info
 
 ## TODO
 
-- ~Linux platform~
-- ~Windows platorm~
- - ~Set auto start~
- - ~Open config file~
- - Change Logo
+- [x] Linux platform
+- [x] Windows platorm: Set auto start
+- [x] Windows platorm: Open config file
+- [ ] Windows platorm: Change Logo
 
 ## Others
 
