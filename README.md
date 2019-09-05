@@ -53,7 +53,7 @@ domain = oclip.hanxi.info
 - [x] Linux platform
 - [x] Windows platorm: Set auto start
 - [x] Windows platorm: Open config file
-- [ ] Windows platorm: Change Logo
+- [x] Windows platorm: Change Logo
 
 ## Others
 
