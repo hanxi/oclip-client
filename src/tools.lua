@@ -40,12 +40,17 @@ function _M.file_exists(name)
 end
 
 function _M.hex_dump(buf)
-  for byte=1, #buf, 16 do
-     local chunk = buf:sub(byte, byte+15)
-     io.write(string.format('%08X  ',byte-1))
-     chunk:gsub('.', function (c) io.write(string.format('%02X ',string.byte(c))) end)
-     io.write(string.rep(' ',3*(16-#chunk)))
-     io.write(' ',chunk:gsub('%c','.'),"\n") 
+  for byte = 1, #buf, 16 do
+    local chunk = buf:sub(byte, byte + 15)
+    io.write(string.format('%08X  ', byte - 1))
+    chunk:gsub(
+      '.',
+      function(c)
+        io.write(string.format('%02X ', string.byte(c)))
+      end
+    )
+    io.write(string.rep(' ', 3 * (16 - #chunk)))
+    io.write(' ', chunk:gsub('%c', '.'), '\n')
   end
 end
 
@@ -69,11 +74,23 @@ function _M.clipboard_init(on_cliboard_change)
 end
 
 ------- tray --------
+function _M.execute_vbs(vbs_str)
+  print('vbs_str:', vbs_str)
+  local fname = os.tmpname() .. '.vbs'
+  local f = io.open(fname, 'w+')
+  f:write(vbs_str)
+  f:close()
+  local cmd = string.format('wscript %q', fname)
+  print('cmd:', cmd)
+  os.execute(cmd)
+  os.remove(fname)
+end
+
 local userprofile = os.getenv('USERPROFILE')
 --print('userprofile:', userprofile)
 local startup_dir =
   string.format('%s\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup', userprofile)
-local link_file_name = string.format("%s\\oclip.lnk", startup_dir)
+local link_file_name = string.format('%s\\oclip.lnk', startup_dir)
 
 local function is_auto_startup()
   if _M.file_exists(link_file_name) then
@@ -83,23 +100,20 @@ local function is_auto_startup()
 end
 
 local function set_auto_startup()
-  local vbs_str = string.format([[
+  local vbs_str =
+    string.format(
+    [[
 set WshShell=WScript.CreateObject("WScript.Shell")
 set oShellLink=WshShell.CreateShortcut("%s")
 oShellLink.TargetPath="%s"
 oShellLink.WindowStyle=1
 oShellLink.Description="oclip shortcut"
 oShellLink.Save
-]], link_file_name, arg[0])
-  local fname = os.tmpname()..".vbs"
-  local f = io.open(fname, "w+")
-  f:write(vbs_str)
-  f:close()
-  --print(vbs_str)
-  local cmd = string.format("call wscript %q", fname)
-  print("cmd:", cmd)
-  os.execute(cmd)
-  os.remove(fname)
+]],
+    link_file_name,
+    arg[0]
+  )
+  _M.execute_vbs(vbs_str)
 end
 
 local function unset_auto_startup()
@@ -110,14 +124,7 @@ local function open_config()
   local fpath = cfg.get_config_file_path()
   local vbs_str = string.format([[Set oShell = CreateObject("WScript.Shell")
 oShell.Run "notepad %s", 1]], fpath)
-  local fname = os.tmpname()..".vbs"
-  local f = io.open(fname, "w+")
-  f:write(vbs_str)
-  f:close()
-  local cmd = string.format("wscript %s", fname)
-  print(cmd)
-  os.execute(cmd)
-  os.remove(fname)
+  _M.execute_vbs(vbs_str)
 end
 
 local tray_conf
@@ -165,7 +172,7 @@ function _M.tray_init()
 end
 
 function _M.loop()
-    return tray.loop()
+  return tray.loop()
 end
 
 return _M
