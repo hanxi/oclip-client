@@ -14,6 +14,7 @@ DEF= /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" \
 OPENSSL_LIB_PATH=$(OPENSSL_PATH)\lib
 CFLAGS=$(LUA_INC) /c /O2 /Ot /MT /W3 /nologo $(DEF)
 LDFLAGS= /NOLOGO \
+    /SUBSYSTEM:windows /ENTRY:mainCRTStartup \
     /LIBPATH:"$(LUA_LIB_PATH)" $(LUA_LIB) \
     /LIBPATH:"$(OPENSSL_LIB_PATH)" \
     user32.lib shell32.lib ws2_32.lib \
@@ -44,12 +45,18 @@ copas\limit.lua \
 copas\smtp.lua \
 oclip\cacert.lua \
 oclip\cafile.lua \
+oclip\clipboard_helper.lua \
+oclip\clipboard_linux.lua \
 oclip\config.lua \
-oclip\main.lua \
-oclip\rpc.lua \
-oclip\tools.lua \
+oclip\genicon.lua \
 oclip\icon.lua \
 oclip\icon_bytes.lua \
+oclip\main.lua \
+oclip\oclip_cmd.lua \
+oclip\rpc.lua \
+oclip\tools.lua \
+oclip\tray_helper.lua \
+oclip\tray_linux.lua \
 socket\ftp.lua \
 socket\headers.lua \
 socket\http.lua \

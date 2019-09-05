@@ -1,20 +1,19 @@
-local oclip_cmd = require "oclip.oclip_cmd"
+local oclip_cmd = require 'oclip.oclip_cmd'
 if oclip_cmd then
-    return
+  return
 end
 
-package.path='../share/lua/5.3/?.lua;?.lua;;'
-package.cpath='../lib/lua/5.3/?.so;;'
+package.path = '../share/lua/5.3/?.lua;?.lua;;'
+package.cpath = '../lib/lua/5.3/?.so;?.dll;'
 
 local copas = require 'copas'
-local ws = require('websocket')
+local ws = require 'websocket'
 local ws_client = ws.client.copas({timeout = 5})
 local rpc = require 'oclip.rpc'
 local cfg = require 'oclip.config'
 local cafile = require 'oclip.cafile'
 local icon = require 'oclip.icon'
 local tools = require 'oclip.tools'
-
 
 local handler
 

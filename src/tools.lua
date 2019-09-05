@@ -106,7 +106,7 @@ local function unset_auto_startup()
   os.remove(link_file_name)
 end
 
-function _M.open_config()
+local function open_config()
   local fpath = cfg.get_config_file_path()
   local vbs_str = string.format([[Set oShell = CreateObject("WScript.Shell")
 oShell.Run "notepad %s", 1]], fpath)
@@ -135,7 +135,7 @@ end
 
 local function cb_open_config()
   print('open config file')
-  tools.open_config()
+  open_config()
 end
 
 local function cb_exit()
