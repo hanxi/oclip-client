@@ -27,7 +27,6 @@ local function get_file_path_from_home(file_name)
   local home = get_home_dir()
   local separator = package.config:sub(1, 1)
   local file_path = home .. separator .. file_name
-  print('file_path:', file_path)
   return file_path
 end
 
