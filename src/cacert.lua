@@ -1,4 +1,4 @@
-return [[ 
+return [[
 ##
 ## Bundle of CA Root Certificates
 ##
@@ -3506,4 +3506,4 @@ hcErulWuBurQB7Lcq9CClnXO0lD+mefPL5/ndtFhKvshuzHQqp9HpLIiyhY6UFfEW0NnxWViA0kB
 60PZ2Pierc+xYw5F9KBaLJstxabArahH9CdMOA0uG0k7UvToiIMrVCjU8jVStDKDYmlkDJGcn5fq
 dBb9HxEGmpv0
 -----END CERTIFICATE-----
-]] 
+]]
