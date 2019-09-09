@@ -6,6 +6,7 @@ end
 package.path = '../share/lua/5.3/?.lua;?.lua;;'
 package.cpath = '../lib/lua/5.3/?.so;?.dll;'
 
+local socket = require 'socket'
 local copas = require 'copas'
 local ws = require 'websocket'
 local ws_client = ws.client.copas({timeout = 5})
@@ -125,6 +126,7 @@ local function main()
 
   while true do
     copas.step(0)
+    socket.sleep(0.05)
     if tools.loop() == -1 then
       print('exit.')
       break
