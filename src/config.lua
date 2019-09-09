@@ -23,24 +23,38 @@ local function get_home_dir()
   return home
 end
 
+local function get_file_path_from_home(file_name)
+  local home = get_home_dir()
+  local separator = package.config:sub(1, 1)
+  local file_path = home .. separator .. file_name
+  print('file_path:', file_path)
+  return file_path
+end
+
 local config_file_name = '.oclip'
 local config_file_path
 function _M.get_config_file_path()
   if config_file_path then
     return config_file_path
   end
-  local home = get_home_dir()
-  local separator = package.config:sub(1, 1)
-  config_file_path = home .. separator .. config_file_name
-  --print('cfg_path:', config_file_path)
+  config_file_path = get_file_path_from_home(config_file_name)
   return config_file_path
+end
+
+local logs_file_name = '.oclip.log'
+local logs_file_path
+function _M.get_logs_file_path()
+  if logs_file_path then
+    return logs_file_path
+  end
+  logs_file_path = get_file_path_from_home(logs_file_name)
+  return logs_file_path
 end
 
 local function create_empty_file(cfg_path)
   local f = io.open(cfg_path, 'w+')
   f:close()
 end
-
 
 local function get_default_crlf()
   local crlf = 'crlf'
@@ -69,7 +83,7 @@ local function get_config()
     local k, v = line:gmatch('(%w+)[^=]*=%s*(.*)')()
     if k and v then
       config[k] = v
-      --print(k, '=', v)
+    --print(k, '=', v)
     end
     line = f:read('l')
   end

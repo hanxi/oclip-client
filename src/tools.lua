@@ -127,6 +127,13 @@ oShell.Run "notepad %s", 1]], fpath)
   _M.execute_vbs(vbs_str)
 end
 
+local function open_logs()
+  local fpath = cfg.get_logs_file_path()
+  local vbs_str = string.format([[Set oShell = CreateObject("WScript.Shell")
+oShell.Run "notepad %s", 1]], fpath)
+  _M.execute_vbs(vbs_str)
+end
+
 local tray_conf
 local function cb_auto_startup(menuitem)
   menuitem.checked = not menuitem.checked
@@ -145,14 +152,24 @@ local function cb_open_config()
   open_config()
 end
 
+local function cb_open_logs()
+  print('open logs file')
+  open_logs()
+end
+
 local function cb_exit()
   tray.exit()
 end
 
+local _status_text = 'Status: Disconnect'
 function _M.tray_init()
   tray_conf = {
     icon = icon.get(),
     menu = {
+      {
+        text = _status_text,
+        disabled = true
+      },
       {
         text = 'Auto Startup',
         cb = cb_auto_startup,
@@ -163,12 +180,32 @@ function _M.tray_init()
         cb = cb_open_config
       },
       {
+        text = 'Open Logs',
+        cb = cb_open_logs
+      },
+      {
         text = 'Quit',
         cb = cb_exit
       }
     }
   }
   tray.init(tray_conf)
+end
+
+local function update_status(status_text)
+  local old_status_text = tray_conf.menu[1].text
+  if status_text ~= old_status_text then
+    tray_conf.menu[1].text = status_text
+    tray.update(tray_conf)
+  end
+end
+
+function _M.set_status_connected()
+  update_status('Status: Connected')
+end
+
+function _M.set_status_disconnect()
+  update_status('Status: Disconnect')
 end
 
 function _M.loop()

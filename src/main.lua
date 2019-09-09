@@ -6,11 +6,29 @@ end
 package.path = '../share/lua/5.3/?.lua;?.lua;;'
 package.cpath = '../lib/lua/5.3/?.so;?.dll;'
 
+local cfg = require 'oclip.config'
+local log_path = cfg.get_logs_file_path()
+local log_file = io.open(log_path, 'w+')
+
+local origin_print = print
+function _G.print(...)
+  origin_print(...)
+  if log_file then
+    log_file:write(os.date('%Y-%m-%d %H:%M:%S\t'))
+    local n = select('#', ...)
+    for i = 1, n do
+      local a = select(i, ...)
+      log_file:write(tostring(a), '\t')
+    end
+    log_file:write('\n')
+    log_file:flush()
+  end
+end
+
 local copas = require 'copas'
 local ws = require 'websocket'
 local ws_client = ws.client.copas({timeout = 5})
 local rpc = require 'oclip.rpc'
-local cfg = require 'oclip.config'
 local cafile = require 'oclip.cafile'
 local icon = require 'oclip.icon'
 local tools = require 'oclip.tools'
@@ -52,8 +70,10 @@ local function connect()
       if not ok then
         print('could not connect', err)
         print('will try again 5s later...')
+        tools.set_status_disconnect()
         copas.sleep(5)
       end
+      tools.set_status_connected()
       handler = rpc:new_handler(ws_client)
     end
   end
@@ -135,3 +155,5 @@ local function main()
 end
 
 xpcall(main, traceback)
+
+log_file:close()
