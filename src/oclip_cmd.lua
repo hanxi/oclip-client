@@ -34,42 +34,33 @@ local function getopt(arg, options)
 end
 
 local cfg = require 'oclip.config'
-local socket = require "socket"
 local clipboard = require "oclip.clipboard_helper"
 
-local function send_cmd(cmd)
-    local udp = socket.udp()
-    udp:setpeername('127.0.0.1', cfg.get('port'))
-    udp:send(cmd)
-    local data = udp:receive()
-    udp:close()
-    return data
+local function connect_master()
+    local socket = require "socket"
+    local tcp = socket.tcp()
+    local ret = tcp:connect('127.0.0.1', cfg.get('port'))
+    tcp:close()
+    return ret
 end
 
 local function start_master()
+    local home = os.getenv('HOME')
+    local fname = home..'/.oclip.run.sh'
+    local f = io.open(fname, 'w+')
     local exe = string.format("%s %s %s", arg[-2] or '', arg[-1] or '', arg[0])
-    -- fuck the nohup...
-    cmd = string.format("pkill oclip; nohup %s >/tmp/t1.log 2>&1 &", exe)
+    f:write('pkill oclip\n')
+    f:write(string.format('nohup %s >/tmp/t1.log 2>&1 &\n', exe))
+    f:write('sleep 1\n')
+    f:write(string.format('%s -c', exe))
+    f:close()
+    local cmd = string.format('sh %q &', fname)
     --print(cmd)
     os.execute(cmd)
+    --os.remove(fname)
 end
 
-local function check_master()
-    if not send_cmd('test') then
-        start_master()
-    end
-    local retry = 10
-    while retry > 0 do
-        if send_cmd('test') then
-            return
-        end
-        retry = retry - 1
-        socket.sleep(0.01)
-    end
-end
-
-check_master()
-local opts = getopt(arg, "ioh")
+local opts = getopt(arg, "ioch")
 if opts.i then
     local f = io.stdin
     if type(opts.i) == "string" then
@@ -81,13 +72,14 @@ if opts.i then
     end
     clipboard.settext(text)
 
-    if not send_cmd('copy') then
-        print('connect server failed.')
-        os.exit(1)
+    if not connect_master() then
+        start_master()
     end
 elseif opts.o then
     local text = clipboard.gettext()
     io.write(text)
+elseif opts.c then
+    connect_master()
 else
     io.write([[
                  _   _         
